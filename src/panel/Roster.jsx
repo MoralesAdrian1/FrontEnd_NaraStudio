@@ -93,12 +93,12 @@ export default function Roster({ sessionId, onChange, addInDialog = false }) {
           {cancelled.length > 0 && (
             <p className="p-meta">Cancelaron: {cancelled.map((b) => b.student.fullName).join(', ')}</p>
           )}
-          {canAdd && !addInDialog && <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} onDone={refresh} />}
+          {canAdd && !addInDialog && <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} walkInPlan={r.walkInPlan} onDone={refresh} />}
         </>
       )}
       {adding && r && (
         <Dialog title="Agregar alumna a la lista" wide onClose={() => setAdding(false)}>
-          <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} onDone={refresh} bare />
+          <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} walkInPlan={r.walkInPlan} onDone={refresh} bare />
         </Dialog>
       )}
       {paying && <CollectDialog b={paying} onClose={(done) => { setPaying(null); if (done) refresh() }} />}
@@ -136,7 +136,7 @@ function CollectDialog({ b, onClose }) {
 }
 
 /** Catálogo: alumnas con membresía activa para esta clase que no están en la lista. */
-function AddStudents({ sessionId, spotsLeft, onDone, bare = false }) {
+function AddStudents({ sessionId, spotsLeft, walkInPlan, onDone, bare = false }) {
   const list = useLoad(`/bookings/sessions/${sessionId}/candidates`)
   const [q, setQ] = useState('')
   const action = useAction()
@@ -162,7 +162,7 @@ function AddStudents({ sessionId, spotsLeft, onDone, bare = false }) {
             <input className="p-filter-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre o celular" aria-label="Buscar alumna" />
           )}
           <Notice>{list.error || action.error}</Notice>
-          {list.data?.length === 0 && <p className="p-meta">Nadie más tiene membresía para esta clase. Véndele un plan en “Alumnas”.</p>}
+          {list.data?.length === 0 && <p className="p-meta">Nadie más tiene membresía para esta clase.</p>}
           <ul className="p-candidates">
             {shown.map((s) => (
               <li key={s.id}>
@@ -174,6 +174,72 @@ function AddStudents({ sessionId, spotsLeft, onDone, bare = false }) {
                 </span>
                 <button className="btn btn-glass btn-small" onClick={() => add(s)} disabled={action.busy} aria-label={`Agregar a ${s.fullName}`}>
                   + Agregar
+                </button>
+              </li>
+            ))}
+          </ul>
+          <WithoutPlan sessionId={sessionId} plan={walkInPlan} onDone={onDone} />
+        </>
+      )}
+    </div>
+  )
+}
+
+/** Llegó sin plan: se busca entre todas las alumnas y se le cobra la clase individual ahí mismo. */
+function WithoutPlan({ sessionId, plan, onDone }) {
+  const [q, setQ] = useState('')
+  const [chosen, setChosen] = useState(null)
+  const action = useAction()
+  const needle = q.trim()
+  const found = useLoad(needle.length >= 2 ? `/students?q=${encodeURIComponent(needle)}` : null)
+
+  const charge = () =>
+    action.run(async () => {
+      await api('/memberships/sell-at-class', { method: 'POST', body: { sessionId, studentId: chosen.id } })
+      setChosen(null)
+      setQ('')
+      onDone()
+    }, `${chosen.fullName}: clase cobrada y asistencia confirmada.`)
+
+  return (
+    <div className="p-walkin">
+      <h3 className="p-sub">¿Llegó sin plan?</h3>
+      {!plan ? (
+        <p className="p-meta">No hay una clase individual a la venta para esta disciplina. Créala en “Planes”.</p>
+      ) : chosen ? (
+        <div className="p-dialog-body">
+          <p>Cobra la clase de hoy a <b>{chosen.fullName}</b>:</p>
+          <p className="p-dialog-price">
+            <b>{plan.name}</b>
+            <span>{money(plan.priceCents)}</span>
+          </p>
+          <p className="auth-help">Confirma solo cuando tengas el efectivo en la mano. Se registra el pago y su asistencia.</p>
+          <Notice>{action.error}</Notice>
+          <span className="p-actions">
+            <button className="btn btn-ok" onClick={charge} disabled={action.busy}>
+              {action.busy ? 'Guardando…' : `Recibí ${money(plan.priceCents)}`}
+            </button>
+            <button className="btn btn-glass" onClick={() => setChosen(null)} disabled={action.busy}>Cancelar</button>
+          </span>
+        </div>
+      ) : (
+        <>
+          <p className="auth-help">
+            Búscala y cóbrale la clase individual ({money(plan.priceCents)}) en efectivo. ¿Es nueva? Primero regístrala en <a href="#alumnas">Alumnas</a>.
+          </p>
+          <input className="p-filter-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nombre, celular o correo" aria-label="Buscar alumna sin plan" />
+          <Notice>{found.error}</Notice>
+          {found.data?.length === 0 && <p className="p-meta">No encontramos a nadie con “{needle}”.</p>}
+          <ul className="p-candidates">
+            {(found.data ?? []).slice(0, 8).map((s) => (
+              <li key={s.id}>
+                <StudentPhoto name={s.fullName} path={s.photoPath} small />
+                <span className="p-roster-name">
+                  <b>{s.fullName}</b>
+                  <small>{s.activePlans.length ? s.activePlans.join(', ') : 'Sin plan activo'}{!s.usesApp && ' · sin app'}</small>
+                </span>
+                <button className="btn btn-glass btn-small" onClick={() => setChosen(s)} aria-label={`Cobrar clase a ${s.fullName}`}>
+                  Cobrar clase
                 </button>
               </li>
             ))}
