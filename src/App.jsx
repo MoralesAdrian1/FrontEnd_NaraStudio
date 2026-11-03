@@ -127,7 +127,6 @@ const nextSlot = (slots, now = new Date()) =>
 function useReveal() {
   useEffect(() => {
     document.documentElement.classList.add('js')
-    const items = document.querySelectorAll('[data-reveal]')
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
@@ -139,8 +138,23 @@ function useReveal() {
       },
       { rootMargin: '0px 0px -10% 0px' },
     )
-    items.forEach((el) => io.observe(el))
-    return () => io.disconnect()
+    const watch = (root) => root.querySelectorAll('[data-reveal]:not(.is-in)').forEach((el) => io.observe(el))
+    watch(document)
+    // Lo que llega después del backend (coaches, planes) también tiene que aparecer
+    const mo = new MutationObserver((changes) => {
+      for (const c of changes) {
+        for (const node of c.addedNodes) {
+          if (!(node instanceof Element)) continue
+          if (node.matches('[data-reveal]:not(.is-in)')) io.observe(node)
+          watch(node)
+        }
+      }
+    })
+    mo.observe(document.body, { childList: true, subtree: true })
+    return () => {
+      mo.disconnect()
+      io.disconnect()
+    }
   }, [])
 }
 
