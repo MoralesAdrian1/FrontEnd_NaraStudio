@@ -11,7 +11,12 @@ export const studio = {
   mapsUrl: 'https://maps.app.goo.gl/e9Xo1NU29e2RSMzP9',
   // Grupo de WhatsApp de las alumnas (sección "Grupo de WhatsApp" del panel)
   whatsappGroup: 'https://chat.whatsapp.com/HjSiIHdYrVZLFPE6nD4TpY',
-  instagram: null, // enlace al perfil cuando lo tengan
+  // Contacto de Nadia (WhatsApp en formato internacional, sin signos)
+  phone: '418 141 9587',
+  whatsapp: '524181419587',
+  instagram: 'https://www.instagram.com/nara_studio26/',
+  tiktok: 'https://www.tiktok.com/@nadlesp',
+  facebook: 'https://www.facebook.com/share/1DkzTX8Mvb/',
   hours: [
     ['Lunes a viernes', '6:30 – 21:15'],
     ['Sábado', 'Cerrado'],

@@ -186,6 +186,9 @@ function Blobs() {
   )
 }
 
+const wa = (text) => `https://wa.me/${studio.whatsapp}?text=${encodeURIComponent(text)}`
+const WHATSAPP = wa('Hola Nara, tengo una duda sobre las clases.')
+const SOCIAL = [['Instagram', studio.instagram], ['TikTok', studio.tiktok], ['Facebook', studio.facebook]]
 const money = (n) => `$${n.toLocaleString('es-MX')}`
 
 function Header() {
@@ -743,6 +746,9 @@ function Location() {
           <a className="btn btn-clay btn-block" href={studio.mapsUrl} target="_blank" rel="noreferrer">
             Cómo llegar en Google Maps
           </a>
+          <a className="btn btn-glass btn-block" href={WHATSAPP} target="_blank" rel="noreferrer">
+            WhatsApp {studio.phone}
+          </a>
         </div>
       </div>
     </section>
@@ -768,7 +774,12 @@ function Footer() {
           </nav>
           <div>
             <p>{studio.address}<br />{studio.city}</p>
-            {studio.instagram && <p><a href={studio.instagram} target="_blank" rel="noreferrer">Instagram</a></p>}
+            <p>
+              <a href={WHATSAPP} target="_blank" rel="noreferrer">WhatsApp {studio.phone}</a>
+            </p>
+            <p className="footer-social">
+              {SOCIAL.map(([name, href]) => <a key={name} href={href} target="_blank" rel="noreferrer">{name}</a>)}
+            </p>
           </div>
           <p className="credits">Imágenes: {credits.join(' · ')}.</p>
         </div>
