@@ -3,7 +3,6 @@ import './App.css'
 import { combo, credits, demos, disciplines, gallery, instructors, mission, philosophy, schedule, studio, vision } from './data/studio.js'
 import InstructorDialog from './components/InstructorDialog.jsx'
 import StudioMap from './components/StudioMap.jsx'
-import { supabase } from './lib/supabase.js'
 import { api } from './lib/api.js'
 import { addDays, clock, DAYS, studioDate, studioDateTime, weekdayOf, whenLabel } from './lib/time.js'
 import Avatar from './components/Avatar.jsx'
@@ -139,17 +138,9 @@ function Blobs() {
   )
 }
 
-const wa = (text) => `https://wa.me/${studio.whatsapp}?text=${encodeURIComponent(text)}`
-const WA = wa('Hola Nara, quiero reservar mi primera clase.')
 const money = (n) => `$${n.toLocaleString('es-MX')}`
 
 function Header() {
-  const [signedIn, setSignedIn] = useState(false)
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session))
-    const { data } = supabase.auth.onAuthStateChange((_, session) => setSignedIn(!!session))
-    return () => data.subscription.unsubscribe()
-  }, [])
   return (
     <header className="bar">
       <div className="bar-inner glass">
@@ -162,9 +153,10 @@ function Header() {
           <a href="#instructoras">Instructoras</a>
           <a href="#ubicacion">Ubicación</a>
         </nav>
-        <a className="btn btn-glass btn-small" href={signedIn ? '/cuenta' : '/entrar'}>{signedIn ? 'Mi cuenta' : 'Entrar'}</a>
-        <a className="btn btn-clay btn-small" href={WA} target="_blank" rel="noreferrer">Reservar</a>
       </div>
+      <p className="maintenance glass" role="status">
+        Estamos en mantenimiento: por ahora no puedes entrar a tu cuenta, reservar ni contratar planes. Vuelve pronto.
+      </p>
     </header>
   )
 }
@@ -180,7 +172,7 @@ function Hero({ next }) {
           mujer fortalezca su cuerpo y disfrute su proceso.
         </p>
         <div className="actions">
-          <a className="btn btn-clay" href={WA} target="_blank" rel="noreferrer">Reserva tu primera clase</a>
+          <a className="btn btn-glass" href="#clases">Ver planes</a>
           <a className="btn btn-glass" href="#horario">Ver horario</a>
         </div>
       </div>
@@ -280,12 +272,6 @@ function usePlans() {
   return live
 }
 
-/** Con plan real: a la cuenta con el plan elegido; sin backend: por WhatsApp. */
-const wantLink = (p, what) =>
-  p.id
-    ? { href: `/cuenta?plan=${p.id}#membresias` }
-    : { href: wa(`Hola Nara, quiero ${what} (${money(p.price)}).`), target: '_blank', rel: 'noreferrer' }
-
 function Classes() {
   const live = usePlans()
   const shownCombo = live?.combo ?? combo
@@ -323,9 +309,6 @@ function Classes() {
                   <li key={p.label} className="plan glass">
                     <span>{p.label}</span>
                     <b>{money(p.price)}</b>
-                    <a className="plan-btn" {...wantLink(p, `el plan ${p.label} de ${d.name}`)}>
-                      Lo quiero
-                    </a>
                   </li>
                 ))}
               </ul>
@@ -340,9 +323,6 @@ function Classes() {
           <p>Las dos disciplinas, todas las clases que quieras.</p>
         </div>
         <b>{money(shownCombo.price)}</b>
-        <a className="btn btn-light" {...wantLink(shownCombo, `el plan ${shownCombo.label}`)}>
-          Lo quiero
-        </a>
       </div>
     </section>
   )
@@ -357,19 +337,6 @@ function spots(c) {
   if (c.spotsLeft === 0) return 'Llena'
   return `${c.spotsLeft} ${c.spotsLeft === 1 ? 'lugar' : 'lugares'}`
 }
-
-/** Se puede reservar una sesión real, futura, no cancelada y con lugar. */
-const isOpen = (c, now) => typeof c.id === 'number' && c.status === 'scheduled' && c.spotsLeft > 0 && c.startsAt > now
-
-/** Reservar si su semana ya abrió; si no, avisa cuándo abre. */
-function BookLink({ c, now, label }) {
-  if (!isOpen(c, now)) return null
-  if (!c.bookable) return <small className="book-soon">Abre el sábado</small>
-  return <a className="book-link" href={bookHref(c)} aria-label={label}>Reservar</a>
-}
-
-/** A la cuenta con la clase elegida; sin sesión iniciada, /cuenta manda primero a entrar o crear cuenta. */
-const bookHref = (c) => `/cuenta?reservar=${c.id}#reservar`
 
 /** Lugares libres en verde; llena o cancelada en gris. */
 function Spots({ c, className }) {
@@ -392,7 +359,6 @@ function Schedule({ slots, onOpenInstructor }) {
   const at = (d, t) => slots.filter((c) => c.day === d && c.time === t)
   const dateOf = (d) => slots.find((c) => c.day === d)?.date
   const label = (c) => `${c.name}, ${DAYS[c.day]} ${clock(c.time)}, con ${c.coachName}${spots(c) ? `, ${spots(c)}` : ''}. Ver perfil`
-  const bookLabel = (c) => `Reservar ${c.name}, ${DAYS[c.day]} ${clock(c.time)}`
   const cls = (c) =>
     `k-${kind(c)} ${isPast(c) ? 'past' : ''} ${isNext(c) ? 'is-next' : ''} ${c.status === 'cancelled' ? 'is-cancelled' : ''} ${c.spotsLeft === 0 ? 'is-full' : ''}`
 
@@ -441,7 +407,6 @@ function Schedule({ slots, onOpenInstructor }) {
                         </button>
                         {isNext(c) && <em>Siguiente</em>}
                         <Spots c={c} className="cal-spots" />
-                        <BookLink c={c} now={now} label={bookLabel(c)} />
                       </div>
                     ))}
                   </span>
@@ -483,7 +448,6 @@ function Schedule({ slots, onOpenInstructor }) {
                     <span>{c.coachName}</span>
                   </button>
                   {isNext(c) && <span className="slot-flag">Siguiente</span>}
-                  <BookLink c={c} now={now} label={bookLabel(c)} />
                 </li>
               )
             })}

@@ -2,11 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import { Account, Login, ResetPassword } from './auth/AuthPages.jsx'
 
-// Pocas páginas: basta con elegir por la ruta
-const pages = { '/entrar': Login, '/cuenta': Account, '/restablecer': ResetPassword }
-const Page = pages[window.location.pathname.replace(/\/$/, '')] ?? App
+// Mantenimiento: cualquier ruta muestra la landing; la cuenta y el panel no están disponibles
+if (window.location.pathname !== '/') window.history.replaceState(null, '', '/')
+const Page = App
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
