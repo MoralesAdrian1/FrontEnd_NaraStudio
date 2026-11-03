@@ -45,7 +45,8 @@ export default function Students() {
   )
 }
 
-function NewStudent({ onDone, onCancel }) {
+/** Registro de alumna: se crea su cuenta y le llega la invitación. También se usa al pasar lista. */
+export function NewStudent({ onDone, onCancel }) {
   const [form, setForm] = useState({ fullName: '', phone: '', email: '', birthDate: '' })
   const action = useAction()
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })

@@ -3,6 +3,7 @@ import { api } from '../lib/api.js'
 import { money } from '../lib/time.js'
 import { KIND_LABEL } from './plan-labels.js'
 import { Dialog, Empty, Notice, StudentPhoto } from './ui.jsx'
+import { NewStudent } from './Students.jsx'
 import { useAction, useLoad } from './hooks.js'
 
 const STATUS = {
@@ -93,12 +94,12 @@ export default function Roster({ sessionId, onChange, addInDialog = false }) {
           {cancelled.length > 0 && (
             <p className="p-meta">Cancelaron: {cancelled.map((b) => b.student.fullName).join(', ')}</p>
           )}
-          {canAdd && !addInDialog && <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} walkInPlan={r.walkInPlan} onDone={refresh} />}
+          {canAdd && !addInDialog && <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} salePlans={r.salePlans} onDone={refresh} />}
         </>
       )}
       {adding && r && (
         <Dialog title="Agregar alumna a la lista" wide onClose={() => setAdding(false)}>
-          <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} walkInPlan={r.walkInPlan} onDone={refresh} bare />
+          <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} salePlans={r.salePlans} onDone={refresh} bare />
         </Dialog>
       )}
       {paying && <CollectDialog b={paying} onClose={(done) => { setPaying(null); if (done) refresh() }} />}
@@ -136,7 +137,7 @@ function CollectDialog({ b, onClose }) {
 }
 
 /** Catálogo: alumnas con membresía activa para esta clase que no están en la lista. */
-function AddStudents({ sessionId, spotsLeft, walkInPlan, onDone, bare = false }) {
+function AddStudents({ sessionId, spotsLeft, salePlans, onDone, bare = false }) {
   const list = useLoad(`/bookings/sessions/${sessionId}/candidates`)
   const [q, setQ] = useState('')
   const action = useAction()
@@ -178,58 +179,53 @@ function AddStudents({ sessionId, spotsLeft, walkInPlan, onDone, bare = false })
               </li>
             ))}
           </ul>
-          <WithoutPlan sessionId={sessionId} plan={walkInPlan} onDone={onDone} />
+          <WithoutPlan sessionId={sessionId} plans={salePlans} onDone={onDone} />
         </>
       )}
     </div>
   )
 }
 
-/** Llegó sin plan: se busca entre todas las alumnas y se le cobra la clase individual ahí mismo. */
-function WithoutPlan({ sessionId, plan, onDone }) {
+/**
+ * Llegó sin plan: se busca entre todas las alumnas (o se registra ahí mismo y le llega la
+ * invitación) y se le cobra en efectivo la clase individual o una membresía.
+ */
+function WithoutPlan({ sessionId, plans, onDone }) {
   const [q, setQ] = useState('')
   const [chosen, setChosen] = useState(null)
-  const action = useAction()
+  const [registering, setRegistering] = useState(false)
   const needle = q.trim()
   const found = useLoad(needle.length >= 2 ? `/students?q=${encodeURIComponent(needle)}` : null)
 
-  const charge = () =>
-    action.run(async () => {
-      await api('/memberships/sell-at-class', { method: 'POST', body: { sessionId, studentId: chosen.id } })
-      setChosen(null)
-      setQ('')
-      onDone()
-    }, `${chosen.fullName}: clase cobrada y asistencia confirmada.`)
+  const restart = () => {
+    setChosen(null)
+    setQ('')
+  }
 
   return (
     <div className="p-walkin">
       <h3 className="p-sub">¿Llegó sin plan?</h3>
-      {!plan ? (
-        <p className="p-meta">No hay una clase individual a la venta para esta disciplina. Créala en “Planes”.</p>
+      {!plans.length ? (
+        <p className="p-meta">No hay planes a la venta para esta disciplina. Créalos en “Planes”.</p>
       ) : chosen ? (
-        <div className="p-dialog-body">
-          <p>Cobra la clase de hoy a <b>{chosen.fullName}</b>:</p>
-          <p className="p-dialog-price">
-            <b>{plan.name}</b>
-            <span>{money(plan.priceCents)}</span>
-          </p>
-          <p className="auth-help">Confirma solo cuando tengas el efectivo en la mano. Se registra el pago y su asistencia.</p>
-          <Notice>{action.error}</Notice>
-          <span className="p-actions">
-            <button className="btn btn-ok" onClick={charge} disabled={action.busy}>
-              {action.busy ? 'Guardando…' : `Recibí ${money(plan.priceCents)}`}
-            </button>
-            <button className="btn btn-glass" onClick={() => setChosen(null)} disabled={action.busy}>Cancelar</button>
-          </span>
-        </div>
+        <Charge
+          sessionId={sessionId}
+          student={chosen}
+          plans={plans}
+          onDone={() => { restart(); onDone() }}
+          onCancel={() => setChosen(null)}
+        />
+      ) : registering ? (
+        <NewStudent onDone={(s) => { setRegistering(false); setChosen(s) }} onCancel={() => setRegistering(false)} />
       ) : (
         <>
-          <p className="auth-help">
-            Búscala y cóbrale la clase individual ({money(plan.priceCents)}) en efectivo. ¿Es nueva? Primero regístrala en <a href="#alumnas">Alumnas</a>.
-          </p>
-          <input className="p-filter-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nombre, celular o correo" aria-label="Buscar alumna sin plan" />
+          <p className="auth-help">Búscala y cóbrale en efectivo la clase de hoy o una membresía. Si es nueva, regístrala y le llega su invitación a la app.</p>
+          <div className="p-actions">
+            <input className="p-filter-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nombre, celular o correo" aria-label="Buscar alumna sin plan" />
+            <button className="btn btn-glass btn-small" onClick={() => setRegistering(true)}>+ Registrar alumna nueva</button>
+          </div>
           <Notice>{found.error}</Notice>
-          {found.data?.length === 0 && <p className="p-meta">No encontramos a nadie con “{needle}”.</p>}
+          {found.data?.length === 0 && <p className="p-meta">No encontramos a nadie con “{needle}”. Regístrala como alumna nueva.</p>}
           <ul className="p-candidates">
             {(found.data ?? []).slice(0, 8).map((s) => (
               <li key={s.id}>
@@ -238,14 +234,52 @@ function WithoutPlan({ sessionId, plan, onDone }) {
                   <b>{s.fullName}</b>
                   <small>{s.activePlans.length ? s.activePlans.join(', ') : 'Sin plan activo'}{!s.usesApp && ' · sin app'}</small>
                 </span>
-                <button className="btn btn-glass btn-small" onClick={() => setChosen(s)} aria-label={`Cobrar clase a ${s.fullName}`}>
-                  Cobrar clase
+                <button className="btn btn-glass btn-small" onClick={() => setChosen(s)} aria-label={`Cobrar a ${s.fullName}`}>
+                  Cobrar
                 </button>
               </li>
             ))}
           </ul>
         </>
       )}
+    </div>
+  )
+}
+
+/** Qué paga (clase de hoy o membresía) y cuánto; al confirmar queda pagado y con asistencia. */
+function Charge({ sessionId, student, plans, onDone, onCancel }) {
+  const [planId, setPlanId] = useState(plans[0].id)
+  const action = useAction()
+  const plan = plans.find((p) => p.id === planId)
+  const charge = () =>
+    action.run(async () => {
+      await api('/memberships/sell-at-class', { method: 'POST', body: { sessionId, studentId: student.id, planId } })
+      onDone()
+    }, `${student.fullName}: pago y asistencia registrados. Le llega su recibo por correo.`)
+
+  return (
+    <div className="p-dialog-body">
+      <p>¿Qué paga <b>{student.fullName}</b>?</p>
+      <div className="p-plan-pick" role="radiogroup" aria-label="Plan que paga">
+        {plans.map((p) => (
+          <label key={p.id} className={p.id === planId ? 'is-on' : ''}>
+            <input type="radio" name="sale-plan" checked={p.id === planId} onChange={() => setPlanId(p.id)} />
+            <span>
+              <b>{p.name}</b>
+              <small>{p.kind === 'single_class' ? 'Solo la clase de hoy' : `${KIND_LABEL[p.kind]} · la clase de hoy cuenta como la primera`}</small>
+            </span>
+            <span>{money(p.priceCents)}</span>
+          </label>
+        ))}
+      </div>
+      <p className="auth-help">Confirma solo cuando tengas el efectivo en la mano. Se registra el pago y su asistencia.</p>
+      <Notice>{action.error}</Notice>
+      <span className="p-actions">
+        <button className="btn btn-ok" onClick={charge} disabled={action.busy}>
+          {action.busy ? 'Guardando…' : `Recibí ${money(plan.priceCents)}`}
+        </button>
+        <button className="btn btn-glass" onClick={onCancel} disabled={action.busy}>Cancelar</button>
+      </span>
     </div>
   )
 }
