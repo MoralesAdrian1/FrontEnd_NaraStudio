@@ -9,6 +9,7 @@ import Classes from './Classes.jsx'
 import CoachProfile from './CoachProfile.jsx'
 import Coaches from './Coaches.jsx'
 import Memberships from './Memberships.jsx'
+import NextClass from './NextClass.jsx'
 import Plans from './Plans.jsx'
 import Progress, { StreakBadge } from './Progress.jsx'
 import { useLoad } from './hooks.js'
@@ -43,6 +44,7 @@ function groupsFor(role) {
   if (role === 'coach') {
     return [{
       items: [
+        ['proxima', 'Próxima clase', NextClass],
         ['sesiones', 'Sesiones', Sessions],
         ['clases', 'Mis clases', Classes],
         ['solicitudes', 'Pagos en efectivo', Requests],
@@ -54,7 +56,7 @@ function groupsFor(role) {
     }]
   }
   return [
-    { title: 'Clases', items: [['sesiones', 'Sesiones', Sessions], ['clases', 'Clases', Classes], ['cerrados', 'Días cerrados', Closures]] },
+    { title: 'Clases', items: [['proxima', 'Próxima clase', NextClass], ['sesiones', 'Sesiones', Sessions], ['clases', 'Clases', Classes], ['cerrados', 'Días cerrados', Closures]] },
     { title: 'Alumnas y ventas', items: [['alumnas', 'Alumnas', Students], ['solicitudes', 'Pagos en efectivo', Requests], ['planes', 'Planes', Plans]] },
     { title: 'Dinero', items: [['corte', 'Corte semanal', Settlement]] },
     { title: 'Estudio', items: [['coaches', 'Coaches', Coaches], ['disciplinas', 'Disciplinas', Disciplines]] },

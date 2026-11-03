@@ -15,12 +15,14 @@ const STATUS = {
 
 /**
  * Lista de una sesión (va dentro de una ventana): confirmar asistencia, cobrar a quien paga en
- * efectivo al llegar y agregar alumnas con membresía activa que no reservaron.
+ * efectivo al llegar y agregar alumnas con membresía activa que no reservaron. Con addInDialog, el
+ * catálogo se abre con un botón en su propia ventana.
  */
-export default function Roster({ sessionId, onChange }) {
+export default function Roster({ sessionId, onChange, addInDialog = false }) {
   const roster = useLoad(`/bookings/sessions/${sessionId}`)
   const action = useAction()
   const [paying, setPaying] = useState(null)
+  const [adding, setAdding] = useState(false)
   const r = roster.data
   const refresh = () => {
     roster.reload()
@@ -36,6 +38,7 @@ export default function Roster({ sessionId, onChange }) {
   const active = r?.bookings.filter((b) => b.status !== 'cancelled_by_student' && b.status !== 'cancelled_by_studio') ?? []
   const cancelled = r?.bookings.filter((b) => !active.includes(b)) ?? []
   const toCollect = active.filter((b) => b.payment).length
+  const canAdd = r?.canMark && r.status !== 'cancelled'
 
   return (
     <div className="p-roster">
@@ -43,10 +46,15 @@ export default function Roster({ sessionId, onChange }) {
       {roster.loading && <p className="p-meta">Cargando lista…</p>}
       {r && (
         <>
-          <p className="p-meta">
-            {r.capacity - r.spotsLeft} de {r.capacity} lugares
-            {toCollect > 0 && <> · <b className="p-warn-soft">{toCollect} {toCollect === 1 ? 'paga' : 'pagan'} en efectivo hoy</b></>}
-          </p>
+          <div className="p-roster-head">
+            <p className="p-meta">
+              {r.capacity - r.spotsLeft} de {r.capacity} lugares
+              {toCollect > 0 && <> · <b className="p-warn-soft">{toCollect} {toCollect === 1 ? 'paga' : 'pagan'} en efectivo hoy</b></>}
+            </p>
+            {addInDialog && canAdd && (
+              <button className="btn btn-clay btn-small" onClick={() => setAdding(true)}>+ Agregar alumna</button>
+            )}
+          </div>
           {!r.canMark && <p className="auth-help">La asistencia se confirma a partir de 2 horas antes de la clase.</p>}
           {active.length === 0 && <Empty>Nadie ha reservado todavía.</Empty>}
           <ul className="p-roster-list">
@@ -85,8 +93,13 @@ export default function Roster({ sessionId, onChange }) {
           {cancelled.length > 0 && (
             <p className="p-meta">Cancelaron: {cancelled.map((b) => b.student.fullName).join(', ')}</p>
           )}
-          {r.canMark && r.status !== 'cancelled' && <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} onDone={refresh} />}
+          {canAdd && !addInDialog && <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} onDone={refresh} />}
         </>
+      )}
+      {adding && r && (
+        <Dialog title="Agregar alumna a la lista" wide onClose={() => setAdding(false)}>
+          <AddStudents sessionId={sessionId} spotsLeft={r.spotsLeft} onDone={refresh} bare />
+        </Dialog>
       )}
       {paying && <CollectDialog b={paying} onClose={(done) => { setPaying(null); if (done) refresh() }} />}
     </div>
@@ -123,7 +136,7 @@ function CollectDialog({ b, onClose }) {
 }
 
 /** Catálogo: alumnas con membresía activa para esta clase que no están en la lista. */
-function AddStudents({ sessionId, spotsLeft, onDone }) {
+function AddStudents({ sessionId, spotsLeft, onDone, bare = false }) {
   const list = useLoad(`/bookings/sessions/${sessionId}/candidates`)
   const [q, setQ] = useState('')
   const action = useAction()
@@ -139,7 +152,7 @@ function AddStudents({ sessionId, spotsLeft, onDone }) {
 
   return (
     <div className="p-walkin">
-      <h3 className="p-sub">Agregar alumna a la lista</h3>
+      {!bare && <h3 className="p-sub">Agregar alumna a la lista</h3>}
       {spotsLeft === 0 ? (
         <p className="p-meta">La clase está llena.</p>
       ) : (

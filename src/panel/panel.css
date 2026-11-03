@@ -427,3 +427,13 @@
 
 /* Ficha de la alumna: cuenta en la app */
 .p-account { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: var(--step-small); font-weight: 600; }
+
+/* Próxima clase: pantalla propia con el desglose arriba y la lista abajo */
+.p-roster-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.p-next h2 { font-size: clamp(1.875rem, 1.4rem + 2vw, 2.75rem); }
+.p-next-status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 600; }
+.p-next.is-live .p-next-status { color: var(--terra); }
+.p-next-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.p-next-facts div { padding: 10px 14px; border-radius: 14px; background: rgb(255 255 255 / 0.55); }
+.p-next-facts dt { color: var(--muted); font-size: var(--step-small); }
+.p-next-facts dd { font-weight: 700; font-size: 1.125rem; }
