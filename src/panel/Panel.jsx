@@ -8,6 +8,8 @@ import Book from './Book.jsx'
 import Classes from './Classes.jsx'
 import CoachProfile from './CoachProfile.jsx'
 import Coaches from './Coaches.jsx'
+import Community from './Community.jsx'
+import ImportStudents from './ImportStudents.jsx'
 import Memberships from './Memberships.jsx'
 import NextClass from './NextClass.jsx'
 import Plans from './Plans.jsx'
@@ -40,8 +42,9 @@ function MyProfile(props) {
  */
 function groupsFor(role) {
   const profile = ['perfil', 'Mi perfil', MyProfile]
+  const group = ['grupo', 'Grupo de WhatsApp', Community]
   if (role === 'student') {
-    return [{ items: [['reservar', 'Reservar', Book], ['racha', 'Mi racha', Progress], ['membresias', 'Membresías', Memberships], profile] }]
+    return [{ items: [['reservar', 'Reservar', Book], ['racha', 'Mi racha', Progress], ['membresias', 'Membresías', Memberships], group, profile] }]
   }
   if (role === 'coach') {
     return [{
@@ -53,16 +56,17 @@ function groupsFor(role) {
         ['corte', 'Corte semanal', Settlement],
         ['alumnas', 'Alumnas', Students],
         ['planes', 'Planes', Plans],
+        group,
         profile,
       ],
     }]
   }
   return [
     { title: 'Clases', items: [['proxima', 'Próxima clase', NextClass], ['sesiones', 'Sesiones', Sessions], ['clases', 'Clases', Classes], ['cerrados', 'Días cerrados', Closures]] },
-    { title: 'Alumnas y ventas', items: [['alumnas', 'Alumnas', Students], ['solicitudes', 'Pagos en efectivo', Requests], ['planes', 'Planes', Plans]] },
+    { title: 'Alumnas y ventas', items: [['alumnas', 'Alumnas', Students], ['importar', 'Carga masiva', ImportStudents], ['solicitudes', 'Pagos en efectivo', Requests], ['planes', 'Planes', Plans]] },
     { title: 'Dinero', items: [['corte', 'Corte semanal', Settlement]] },
     { title: 'Estudio', items: [['coaches', 'Coaches', Coaches], ['disciplinas', 'Disciplinas', Disciplines]] },
-    { title: 'Cuenta', items: [profile] },
+    { title: 'Cuenta', items: [group, profile] },
   ]
 }
 

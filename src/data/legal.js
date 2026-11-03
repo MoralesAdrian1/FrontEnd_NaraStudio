@@ -1,5 +1,4 @@
-// Documentos legales del sitio. Lo marcado "EJEMPLO" debe reemplazarse con datos reales antes de
-// publicar, y conviene que un abogado revise los textos.
+// Documentos legales del sitio. Conviene que un abogado revise los textos.
 // Al cambiar un documento, sube LEGAL_VERSION aquí y TERMS_VERSION en el backend
 // (backend/src/common/legal.ts): todas las cuentas tendrán que aceptarlo de nuevo.
 import { studio } from './studio.js'
@@ -8,10 +7,10 @@ export const LEGAL_VERSION = '2026-11-03'
 const UPDATED = '3 de noviembre de 2026'
 
 export const owner = {
-  // EJEMPLO: nombre completo de la persona física o razón social de la empresa
+  // Responsable de los datos personales
   legalName: 'Nadia Patrón López',
   address: `${studio.address}, ${studio.city}`,
-  // EJEMPLO: un correo que sí reciba mensajes (Resend solo envía)
+  // Correo del estudio (el mismo desde el que salen los avisos)
   email: 'hola@narastudio.website',
 }
 

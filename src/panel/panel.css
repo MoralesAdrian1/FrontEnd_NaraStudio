@@ -445,3 +445,17 @@
 .p-plan-pick label > span:first-of-type { display: grid; line-height: 1.3; }
 .p-plan-pick small { color: var(--muted); }
 .p-plan-pick label > span:last-child { font-weight: 700; }
+
+/* Carga masiva de alumnas */
+.p-steps { display: grid; gap: 6px; padding-left: 1.2em; list-style: decimal; }
+.p-file { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; cursor: pointer; }
+.p-file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.p-file:focus-within .btn { outline: 2px solid var(--earth); outline-offset: 2px; }
+.p-import-errors { display: grid; gap: 4px; padding-left: 1.2em; list-style: disc; max-height: 220px; overflow-y: auto; font-size: var(--step-small); }
+.p-import-preview { overflow-x: auto; display: grid; gap: 6px; }
+.p-import-preview table { border-collapse: collapse; width: 100%; font-size: var(--step-small); }
+.p-import-preview th, .p-import-preview td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--surface-2); white-space: nowrap; }
+
+/* Grupo de WhatsApp */
+.p-community { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; }
+.p-community-icon { width: 56px; height: 56px; color: #25d366; }

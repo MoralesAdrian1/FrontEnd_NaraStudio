@@ -11,6 +11,8 @@ export const studio = {
   mapsUrl: 'https://maps.app.goo.gl/e9Xo1NU29e2RSMzP9',
   // EJEMPLO: número de WhatsApp en formato internacional, sin signos
   whatsapp: '524180000000',
+  // Grupo de WhatsApp de las alumnas (sección "Grupo de WhatsApp" del panel)
+  whatsappGroup: 'https://chat.whatsapp.com/HjSiIHdYrVZLFPE6nD4TpY',
   instagram: 'https://instagram.com/narastudio', // EJEMPLO
   hours: [
     ['Lunes a viernes', '6:30 – 21:15'], // EJEMPLO: confirmar
