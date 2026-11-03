@@ -34,7 +34,9 @@ export async function api(path, { method = 'GET', body } = {}) {
     })
     const json = await res.json().catch(() => null)
     if (!res.ok) {
-      const message = Array.isArray(json?.message) ? json.message.join('. ') : json?.message
+      let message = Array.isArray(json?.message) ? json.message.join('. ') : json?.message
+      // El 403 sin explicación de Nest: casi siempre la sesión cambió en otra pestaña
+      if (message === 'Forbidden resource') message = 'Tu cuenta no tiene permiso para esto. Si entraste con otra cuenta en otra pestaña, recarga la página.'
       throw Object.assign(new Error(message ?? 'No se pudo completar la solicitud.'), { status: res.status })
     }
     return json

@@ -196,6 +196,17 @@ export function Account() {
     })
   }, [])
 
+  // La sesión se comparte entre pestañas: si en otra se entra con otra cuenta o se sale,
+  // esta se recarga para no seguir mostrando el panel de la cuenta anterior
+  const meId = me?.id
+  useEffect(() => {
+    if (!meId) return undefined
+    const { data } = supabase.auth.onAuthStateChange((_, session) => {
+      if (session?.user.id !== meId) window.location.reload()
+    })
+    return () => data.subscription.unsubscribe()
+  }, [meId])
+
   if (error) return <AuthLayout title="No pudimos cargar tu cuenta"><Notice>{error}</Notice></AuthLayout>
   if (!me) return <AuthLayout title="Cargando tu cuenta…" />
   if (!me.isComplete) return <CompleteProfile me={me} onDone={setMe} />
@@ -254,7 +265,13 @@ function CompleteProfile({ me, onDone }) {
   }
 
   return (
-    <AuthLayout wide title="Completa tu registro" lead="Solo nos faltan unos datos para que puedas reservar.">
+    <AuthLayout
+      wide
+      title="Completa tu registro"
+      lead={isStudent
+        ? 'Solo nos faltan unos datos para que puedas reservar.'
+        : `Entras como ${me.role === 'admin' ? 'head coach' : 'coach'}. Solo nos falta tu celular y tu fecha de nacimiento.`}
+    >
       <form className="auth-form" onSubmit={submit}>
         <fieldset>
           <legend>Tus datos</legend>
