@@ -1,15 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
+import { peek } from '../lib/cache.js'
 import { notify } from '../lib/feedback.js'
 
-/** Carga datos de la API; reload() vuelve a pedirlos. Sin path no carga nada. */
+/**
+ * Carga datos de la API; reload() vuelve a pedirlos. Sin path no carga nada. Si la respuesta está
+ * guardada (cache.js) se muestra al instante, y solo se pide al backend si ya venció.
+ */
 export function useLoad(path) {
-  const [state, setState] = useState({ data: null, error: '', loading: !!path })
+  const [state, setState] = useState(() => {
+    const hit = path && peek(path)
+    return hit ? { data: hit.data, error: '', loading: false } : { data: null, error: '', loading: !!path }
+  })
   const [tick, setTick] = useState(0)
   useEffect(() => {
     if (!path) return undefined
     let alive = true
-    api(path)
+    api(path, { force: tick > 0 })
       .then((data) => alive && setState({ data, error: '', loading: false }))
       .catch((e) => alive && setState({ data: null, error: e.message, loading: false }))
     return () => {

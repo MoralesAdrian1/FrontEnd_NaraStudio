@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import '../App.css'
 import '../auth/auth.css'
 import './panel.css'
@@ -19,6 +19,8 @@ import Requests from './Requests.jsx'
 import Settlement from './Settlement.jsx'
 import Sessions from './Sessions.jsx'
 import Students from './Students.jsx'
+
+const STREAK_EVERY_MS = 60_000
 
 const ROLE_LABEL = { admin: 'Head coach', coach: 'Coach', student: 'Alumna' }
 
@@ -73,11 +75,15 @@ export default function Panel({ me, onMe }) {
   const tabs = useMemo(() => groups.flatMap((g) => g.items), [groups])
   const [tab, setTab] = useState(() => (tabs.some(([id]) => id === readTab()) ? readTab() : tabs[0][0]))
   const [menuOpen, setMenuOpen] = useState(false)
-  // Las alumnas siempre ven su racha en la barra; se actualiza al cambiar de sección
+  // Las alumnas siempre ven su racha en la barra; al cambiar de sección se actualiza, como mucho
+  // una vez por minuto (solo cambia cuando la coach pasa lista)
   const streak = useLoad(me.role === 'student' ? '/progress/me' : null)
   const reloadStreak = streak.reload
+  const streakAt = useRef(0)
   useEffect(() => {
-    reloadStreak()
+    if (Date.now() - streakAt.current < STREAK_EVERY_MS) return
+    if (streakAt.current) reloadStreak()
+    streakAt.current = Date.now()
   }, [tab, reloadStreak])
   const [, title, Current] = tabs.find(([id]) => id === tab) ?? tabs[0]
   const disciplines = me.coach?.disciplines.map((d) => d.discipline.name).join(' · ')

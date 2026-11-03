@@ -1,3 +1,4 @@
+import { forget, peek, remember } from './cache.js'
 import { supabase } from './supabase.js'
 
 // En desarrollo Vite redirige /api al backend; en producción se define VITE_API_URL
@@ -17,8 +18,15 @@ export function onRequests(fn) {
   return () => listeners.delete(fn)
 }
 
-/** Llama al backend con la sesión de Supabase. */
-export async function api(path, { method = 'GET', body } = {}) {
+/**
+ * Llama al backend con la sesión de Supabase. Lo que cambia poco (ver cache.js) sale de
+ * localStorage mientras esté vigente; force lo pide de nuevo.
+ */
+export async function api(path, { method = 'GET', body, force = false } = {}) {
+  if (method === 'GET' && !force) {
+    const hit = peek(path)
+    if (hit?.fresh) return hit.data
+  }
   const kind = method === 'GET' ? 'reads' : 'writes'
   changed(kind, 1)
   try {
@@ -39,6 +47,8 @@ export async function api(path, { method = 'GET', body } = {}) {
       if (message === 'Forbidden resource') message = 'Tu cuenta no tiene permiso para esto. Si entraste con otra cuenta en otra pestaña, recarga la página.'
       throw Object.assign(new Error(message ?? 'No se pudo completar la solicitud.'), { status: res.status })
     }
+    if (method === 'GET') remember(path, json)
+    else forget(path)
     return json
   } catch (e) {
     // Sin conexión o el servidor no responde

@@ -5,13 +5,58 @@ import InstructorDialog from './components/InstructorDialog.jsx'
 import StudioMap from './components/StudioMap.jsx'
 import { supabase } from './lib/supabase.js'
 import { api } from './lib/api.js'
+import { publicUrl } from './lib/storage.js'
 import { addDays, clock, DAYS, studioDate, studioDateTime, weekdayOf, whenLabel } from './lib/time.js'
 import Avatar from './components/Avatar.jsx'
 
 const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]))
 const INSTRUCTOR = byId(instructors)
-// Perfil público (studio.js) de quien imparte cada disciplina
+// Perfil fijo (studio.js) de quien imparte cada disciplina: solo si el backend no responde
 const PROFILE_BY_DISCIPLINE = { barre: 'nadia', trampolin: 'juana' }
+
+const TONES = { barre: '#e7c9c2', trampolin: '#d8c3ae' }
+const LOOKS = instructors.map((p) => p.look)
+const SHORT_MAX = 170
+
+/** Una coach del backend con la forma de los perfiles de studio.js. */
+function toPerson(c, i) {
+  const story = (c.bio ?? '').split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean)
+  const disciplines = c.disciplines.map((d) => d.name).join(' · ')
+  const first = story[0] ?? `Imparte ${disciplines} en Nara Studio.`
+  return {
+    id: c.id,
+    name: c.name,
+    role: c.isHeadCoach ? `Head coach · ${disciplines}` : disciplines,
+    isHeadCoach: c.isHeadCoach,
+    photo: publicUrl(c.photoPath),
+    tone: TONES[c.disciplines[0]?.slug] ?? TONES.barre,
+    look: LOOKS[i % LOOKS.length],
+    years: null,
+    short: first.length > SHORT_MAX ? `${first.slice(0, SHORT_MAX).replace(/\s+\S*$/, '')}…` : first,
+    bio: story.length ? story : null,
+    experience: [],
+    certificates: c.certifications.map((x) => ({ title: x.issuer ? `${x.name} · ${x.issuer}` : x.name, file: publicUrl(x.filePath) })),
+    social: [
+      c.instagram && { label: 'Instagram', url: `https://instagram.com/${c.instagram}` },
+      c.tiktok && { label: 'TikTok', url: `https://tiktok.com/@${c.tiktok}` },
+    ].filter(Boolean),
+  }
+}
+
+/** Las coaches activas del backend (la head coach primero); null si no responde. */
+function useCoaches() {
+  const [people, setPeople] = useState(null)
+  useEffect(() => {
+    api('/coaches')
+      .then((list) => {
+        if (!list.length) return
+        const sorted = [...list].sort((a, b) => Number(b.isHeadCoach) - Number(a.isHeadCoach))
+        setPeople(sorted.map(toPerson))
+      })
+      .catch(() => {}) // sin backend se quedan los perfiles de studio.js
+  }, [])
+  return people
+}
 const sortByTime = (a, b) => a.time.localeCompare(b.time)
 const classesOf = (slots, id) => slots.filter((c) => c.instructor === id)
 
@@ -54,6 +99,7 @@ function liveSlots(sessions) {
       name: s.class.name,
       discipline: s.discipline.slug,
       instructor: PROFILE_BY_DISCIPLINE[s.discipline.slug],
+      coachId: s.coach.id,
       coachName: s.coach.name,
       status: s.status,
       spotsLeft: s.spotsLeft,
@@ -163,7 +209,7 @@ function Header() {
           <a href="#ubicacion">Ubicación</a>
         </nav>
         <a className="btn btn-glass btn-small" href={signedIn ? '/cuenta' : '/entrar'}>{signedIn ? 'Mi cuenta' : 'Entrar'}</a>
-        <a className="btn btn-clay btn-small" href={WA} target="_blank" rel="noreferrer">Reservar</a>
+        <a className="btn btn-clay btn-small" href="#horario">Reservar</a>
       </div>
     </header>
   )
@@ -223,8 +269,8 @@ function Marquee() {
   )
 }
 
-function About({ onOpen }) {
-  const founder = instructors.find((p) => p.quote)
+function About({ people, onOpen }) {
+  const founder = people.find((p) => p.quote) ?? people.find((p) => p.isHeadCoach)
   return (
     <section className="about wrap" id="nosotras" aria-labelledby="about-title">
       <div className="about-panel glass" data-reveal>
@@ -242,7 +288,7 @@ function About({ onOpen }) {
             <figure className="founder clay-card rose">
               <Portrait person={founder} className="founder-photo" />
               <div>
-                <blockquote>«{founder.quote}»</blockquote>
+                {founder.quote ? <blockquote>«{founder.quote}»</blockquote> : <p>{founder.short}</p>}
                 <figcaption>
                   <b>{founder.name}</b> · {founder.role}
                 </figcaption>
@@ -288,7 +334,8 @@ const wantLink = (p, what) =>
 
 function Classes() {
   const live = usePlans()
-  const shownCombo = live?.combo ?? combo
+  // Con el backend, solo sus planes; los de studio.js son el respaldo si no responde
+  const shownCombo = live ? live.combo : combo
   return (
     <section className="classes wrap" id="clases" aria-labelledby="clases-title">
       <div className="section-head" data-reveal>
@@ -319,7 +366,7 @@ function Classes() {
                 {d.details.slice(1).map((x) => <li key={x}>{x}</li>)}
               </ul>
               <ul className="plans" aria-label={`Planes de ${d.name}`}>
-                {(live?.byDiscipline[d.id] ?? d.plans).map((p) => (
+                {(live ? live.byDiscipline[d.id] ?? [] : d.plans).map((p) => (
                   <li key={p.label} className="plan glass">
                     <span>{p.label}</span>
                     <b>{money(p.price)}</b>
@@ -334,16 +381,18 @@ function Classes() {
         ))}
       </div>
 
-      <div className="combo" data-reveal>
-        <div>
-          <h3>{shownCombo.label}</h3>
-          <p>Las dos disciplinas, todas las clases que quieras.</p>
+      {shownCombo && (
+        <div className="combo" data-reveal>
+          <div>
+            <h3>{shownCombo.label}</h3>
+            <p>Las dos disciplinas, todas las clases que quieras.</p>
+          </div>
+          <b>{money(shownCombo.price)}</b>
+          <a className="btn btn-light" {...wantLink(shownCombo, `el plan ${shownCombo.label}`)}>
+            Lo quiero
+          </a>
         </div>
-        <b>{money(shownCombo.price)}</b>
-        <a className="btn btn-light" {...wantLink(shownCombo, `el plan ${shownCombo.label}`)}>
-          Lo quiero
-        </a>
-      </div>
+      )}
     </section>
   )
 }
@@ -379,7 +428,7 @@ function Spots({ c, className }) {
   return <small className={`${className} ${open ? 'is-open' : ''}`}>{text}</small>
 }
 
-function Schedule({ slots, onOpenInstructor }) {
+function Schedule({ slots, people, onOpenInstructor }) {
   const [now] = useState(() => new Date())
   const today = studioDate(now)
   const week = [...new Set(slots.map((c) => c.day))].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7))
@@ -470,7 +519,7 @@ function Schedule({ slots, onOpenInstructor }) {
           </div>
           <ul className="slots" id="day-panel" role="tabpanel" aria-label={DAYS[day]}>
             {slots.filter((c) => c.day === day).sort(sortByTime).map((c) => {
-              const who = INSTRUCTOR[c.instructor]
+              const who = people[c.instructor]
               return (
                 <li key={c.id} className={`slot ${cls(c)}`}>
                   <span className="slot-time">{clock(c.time)}</span>
@@ -543,7 +592,7 @@ function InstructorCard({ person, slots, onOpen }) {
   )
 }
 
-function Instructors({ slots, onOpen }) {
+function Instructors({ people, slots, onOpen }) {
   const track = useRef(null)
   const [active, setActive] = useState(0)
   // En el carrusel del teléfono: qué tarjeta está a la vista
@@ -564,10 +613,10 @@ function Instructors({ slots, onOpen }) {
         <p>Pasa el cursor o desliza entre las tarjetas. Abre su perfil para ver sus horarios y más sobre ella.</p>
       </div>
       <div className="team-grid" ref={track} onScroll={onScroll}>
-        {instructors.map((p) => <InstructorCard key={p.id} person={p} slots={slots} onOpen={onOpen} />)}
+        {people.map((p) => <InstructorCard key={p.id} person={p} slots={slots} onOpen={onOpen} />)}
       </div>
       <div className="team-dots" role="group" aria-label="Elegir instructora">
-        {instructors.map((p, i) => (
+        {people.map((p, i) => (
           <button key={p.id} className={i === active ? 'on' : ''} aria-label={p.name} aria-current={i === active} onClick={() => go(i)} />
         ))}
       </div>
@@ -736,7 +785,12 @@ function Footer() {
 export default function App() {
   const [openId, setOpenId] = useState(null)
   useReveal()
-  const slots = useSchedule()
+  const coaches = useCoaches()
+  const people = coaches ?? instructors
+  const byPerson = byId(people)
+  const scheduled = useSchedule()
+  // Con las coaches del backend, cada clase apunta a su coach real
+  const slots = coaches ? scheduled.map((c) => (c.coachId ? { ...c, instructor: c.coachId } : c)) : scheduled
   const next = nextSlot(slots)
 
   return (
@@ -747,10 +801,10 @@ export default function App() {
       <main>
         <Hero next={next} />
         <Marquee />
-        <About onOpen={setOpenId} />
+        <About people={people} onOpen={setOpenId} />
         <Classes />
-        <Schedule slots={slots} onOpenInstructor={setOpenId} />
-        <Instructors slots={slots} onOpen={setOpenId} />
+        <Schedule slots={slots} people={byPerson} onOpenInstructor={setOpenId} />
+        <Instructors people={people} slots={slots} onOpen={setOpenId} />
         <Essence />
         <Gallery />
         <Demos />
@@ -758,7 +812,7 @@ export default function App() {
       </main>
       <Footer />
       <InstructorDialog
-        person={openId ? INSTRUCTOR[openId] : null}
+        person={openId ? byPerson[openId] ?? null : null}
         classes={classesOf(slots, openId).sort((a, b) => a.day - b.day || sortByTime(a, b))}
         days={DAYS}
         renderPortrait={(p) => <Portrait person={p} className="dialog-photo" />}
