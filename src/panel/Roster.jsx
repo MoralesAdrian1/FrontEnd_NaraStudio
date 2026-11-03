@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../lib/api.js'
-import { money } from '../lib/time.js'
+import { clock, money, studioTime } from '../lib/time.js'
 import { KIND_LABEL } from './plan-labels.js'
 import { Dialog, Empty, Notice, StudentPhoto } from './ui.jsx'
 import { NewStudent } from './Students.jsx'
@@ -40,6 +40,8 @@ export default function Roster({ sessionId, onChange, addInDialog = false }) {
   const cancelled = r?.bookings.filter((b) => !active.includes(b)) ?? []
   const toCollect = active.filter((b) => b.payment).length
   const canAdd = r?.canMark && r.status !== 'cancelled'
+  // La lista abre 2 horas antes de la clase
+  const opensAt = r && clock(studioTime(Date.parse(r.startsAt) - 2 * 60 * 60 * 1000))
 
   return (
     <div className="p-roster">
@@ -52,11 +54,17 @@ export default function Roster({ sessionId, onChange, addInDialog = false }) {
               {r.capacity - r.spotsLeft} de {r.capacity} lugares
               {toCollect > 0 && <> · <b className="p-warn-soft">{toCollect} {toCollect === 1 ? 'paga' : 'pagan'} en efectivo hoy</b></>}
             </p>
-            {addInDialog && canAdd && (
-              <button className="btn btn-clay btn-small" onClick={() => setAdding(true)}>+ Agregar alumna</button>
+            {addInDialog && r.status !== 'cancelled' && (
+              <button className="btn btn-clay btn-small" onClick={() => setAdding(true)} disabled={!canAdd} aria-describedby={canAdd ? undefined : 'roster-opens'}>
+                + Agregar alumna
+              </button>
             )}
           </div>
-          {!r.canMark && <p className="auth-help">La asistencia se confirma a partir de 2 horas antes de la clase.</p>}
+          {!r.canMark && (
+            <p className="auth-help" id="roster-opens">
+              La lista se abre a las {opensAt} (2 horas antes de la clase): desde ahí confirmas asistencia, cobras y agregas alumnas.
+            </p>
+          )}
           {active.length === 0 && <Empty>Nadie ha reservado todavía.</Empty>}
           <ul className="p-roster-list">
             {active.map((b) => (
