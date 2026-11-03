@@ -24,6 +24,6 @@ const MESSAGES = {
 
 export function authMessage(error) {
   const message = error?.message
-  if (message?.startsWith('Password should')) return 'La contraseña es muy débil: usa al menos 8 caracteres con mayúscula, minúscula y número.'
+  if (message?.startsWith('Password should')) return 'La contraseña es muy débil: usa al menos 8 caracteres con mayúscula, minúscula, número y un carácter especial.'
   return MESSAGES[message] ?? message ?? 'Algo salió mal. Intenta de nuevo.'
 }

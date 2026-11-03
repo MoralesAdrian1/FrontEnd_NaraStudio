@@ -4,6 +4,8 @@ export const PASSWORD_RULES = [
   [(p) => /[A-Z]/.test(p), 'Una mayúscula'],
   [(p) => /[a-z]/.test(p), 'Una minúscula'],
   [(p) => /\d/.test(p), 'Un número'],
+  // Los mismos símbolos que acepta Supabase
+  [(p) => /[!@#$%^&*()_+\-=[\]{};':"\\|<>?,./`~]/.test(p), 'Un carácter especial (! @ # $ % & * …)'],
 ]
 
 /** Texto del error si la contraseña no cumple o no coincide; null si está bien. */
