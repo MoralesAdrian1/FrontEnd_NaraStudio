@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import '../App.css'
 import './auth.css'
 import { api } from '../lib/api.js'
-import { authMessage, providers, supabase } from '../lib/supabase.js'
+import { authMessage, isLeaving, providers, remembered, setRemembered, signOutAndLeave, supabase } from '../lib/supabase.js'
 import Panel from '../panel/Panel.jsx'
 import { passwordProblem } from '../lib/password.js'
 import PasswordFields from './PasswordFields.jsx'
@@ -31,6 +31,15 @@ export function AuthLayout({ title, lead, children, wide = false }) {
         {children}
       </main>
     </div>
+  )
+}
+
+/** Salir desde las pantallas previas al panel (completar registro, aceptar términos). */
+function LeaveLink() {
+  return (
+    <p className="auth-foot">
+      <button className="auth-link" onClick={() => signOutAndLeave()}>Salir de mi cuenta</button>
+    </p>
   )
 }
 
@@ -67,7 +76,7 @@ function GoogleMark() {
 
 export function Login() {
   const [mode, setMode] = useState('login') // login | signup | forgot
-  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '', terms: false })
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '', terms: false, remember: remembered() })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
@@ -90,6 +99,7 @@ export function Login() {
     setError('')
     setInfo('')
     try {
+      if (mode !== 'forgot') setRemembered(form.remember)
       if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
         if (error) throw error
@@ -119,6 +129,7 @@ export function Login() {
 
   const oauth = async (provider) => {
     setError('')
+    setRemembered(form.remember)
     const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: here(nextPath()) } })
     if (error) setError(authMessage(error))
   }
@@ -175,6 +186,12 @@ export function Login() {
           />
         )}
         {mode === 'signup' && <TermsCheck checked={form.terms} onChange={(terms) => setForm({ ...form, terms })} />}
+        {mode !== 'forgot' && (
+          <label className="auth-check">
+            <input type="checkbox" checked={form.remember} onChange={(e) => setForm({ ...form, remember: e.target.checked })} />
+            <span>Recordarme en este dispositivo <small className="auth-hint">(si no, la sesión se cierra al cerrar el navegador)</small></span>
+          </label>
+        )}
         <Notice>{error}</Notice>
         <Notice kind="info">{info}</Notice>
         <button className="btn btn-clay btn-block" disabled={busy}>
@@ -218,7 +235,9 @@ export function Account() {
   useEffect(() => {
     if (!meId) return undefined
     const { data } = supabase.auth.onAuthStateChange((_, session) => {
-      if (session?.user.id !== meId) window.location.reload()
+      if (isLeaving()) return // salió desde aquí: signOutAndLeave ya lleva a la landing
+      if (!session) window.location.replace('/')
+      else if (session.user.id !== meId) window.location.reload()
     })
     return () => data.subscription.unsubscribe()
   }, [meId])
@@ -253,6 +272,7 @@ function AcceptTerms({ onDone }) {
         <Notice>{error}</Notice>
         <button className="btn btn-clay btn-block" disabled={busy}>{busy ? 'Guardando…' : 'Aceptar y continuar'}</button>
       </form>
+      <LeaveLink />
     </AuthLayout>
   )
 }
@@ -377,6 +397,7 @@ function CompleteProfile({ me, onDone }) {
         <Notice>{error}</Notice>
         <button className="btn btn-clay btn-block" disabled={busy}>{busy ? 'Guardando…' : 'Guardar y continuar'}</button>
       </form>
+      <LeaveLink />
     </AuthLayout>
   )
 }

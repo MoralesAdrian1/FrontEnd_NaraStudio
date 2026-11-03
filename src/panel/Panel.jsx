@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import '../App.css'
 import '../auth/auth.css'
 import './panel.css'
-import { supabase } from '../lib/supabase.js'
+import { signOutAndLeave } from '../lib/supabase.js'
 import { Closures, Disciplines } from './Admin.jsx'
 import Book from './Book.jsx'
 import Classes from './Classes.jsx'
@@ -113,9 +113,10 @@ export default function Panel({ me, onMe }) {
     window.scrollTo({ top: 0 })
   }
   const badge = me.role === 'student' && <StreakBadge streak={streak.data} onOpen={() => choose('racha')} />
-  const logout = async () => {
-    await supabase.auth.signOut()
-    window.location.assign('/')
+  const [leaving, setLeaving] = useState(false)
+  const logout = () => {
+    setLeaving(true)
+    signOutAndLeave()
   }
 
   return (
@@ -166,7 +167,7 @@ export default function Panel({ me, onMe }) {
         <div className="panel-who">
           <b>{me.fullName}</b>
           <small>{ROLE_LABEL[me.role]}{disciplines && ` · ${disciplines}`}</small>
-          <button className="btn btn-glass btn-small" onClick={logout}>Salir</button>
+          <button className="btn btn-glass btn-small" onClick={logout} disabled={leaving}>{leaving ? 'Saliendo…' : 'Salir'}</button>
         </div>
       </aside>
 

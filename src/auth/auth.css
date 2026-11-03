@@ -90,3 +90,4 @@
 .auth-rules li { display: inline-flex; gap: 4px; }
 .auth-rules li.is-ok { color: #24592f; font-weight: 600; }
 .auth-field-error { color: #7a2e1f; font-weight: 500; }
+.auth-hint { color: var(--muted); font-weight: 400; }

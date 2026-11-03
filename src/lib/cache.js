@@ -5,6 +5,7 @@
  * almacenamiento de rendimiento (consent.js); si lo rechaza, se borra lo guardado.
  */
 import { getConsent, onConsent } from './consent.js'
+import { SESSION_KEY } from './supabase.js'
 
 const PREFIX = 'nara:v1:'
 const MIN = 60_000
@@ -27,13 +28,11 @@ const TTL = {
 // Al cambiar algo, también se borra lo que lo muestra (el nombre de la coach sale en /coaches)
 const ALSO_CLEARS = { me: ['coaches'], disciplines: ['plans', 'coaches', 'classes'] }
 
-// Proyecto de Supabase: su sesión se guarda en "sb-<ref>-auth-token"
-const SESSION_KEY = `sb-${new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0]}-auth-token`
 
 /** La cuenta con sesión, leída sin esperar a Supabase: cada cuenta tiene su propia caché. */
 function userId() {
   try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY))?.user?.id ?? 'anon'
+    return JSON.parse(localStorage.getItem(SESSION_KEY) ?? sessionStorage.getItem(SESSION_KEY))?.user?.id ?? 'anon'
   } catch {
     return 'anon'
   }
