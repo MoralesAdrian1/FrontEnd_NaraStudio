@@ -8,6 +8,7 @@ import { api } from './lib/api.js'
 import { publicUrl } from './lib/storage.js'
 import { addDays, clock, DAYS, studioDate, studioDateTime, weekdayOf, whenLabel } from './lib/time.js'
 import Avatar from './components/Avatar.jsx'
+import { LegalLinks } from './legal/Legal.jsx'
 
 const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]))
 const INSTRUCTOR = byId(instructors)
@@ -775,6 +776,7 @@ function Footer() {
         </div>
         <div className="footer-last">
           <p>© {YEAR} Nara Studio</p>
+          <LegalLinks />
           <a className="btn btn-small btn-light" href="#inicio">Volver arriba</a>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { authMessage, providers, supabase } from '../lib/supabase.js'
 import Panel from '../panel/Panel.jsx'
 import { passwordProblem } from '../lib/password.js'
 import PasswordFields from './PasswordFields.jsx'
+import { LEGAL_PATHS, LEGAL_VERSION } from '../data/legal.js'
 
 const go = (path) => window.location.assign(path)
 const here = (path) => `${window.location.origin}${path}`
@@ -15,7 +16,7 @@ const nextPath = () => {
   return next?.startsWith('/') && !next.startsWith('//') ? next : '/cuenta'
 }
 
-function AuthLayout({ title, lead, children, wide = false }) {
+export function AuthLayout({ title, lead, children, wide = false }) {
   return (
     <div className="auth">
       <div className="blobs" aria-hidden="true">
@@ -30,6 +31,19 @@ function AuthLayout({ title, lead, children, wide = false }) {
         {children}
       </main>
     </div>
+  )
+}
+
+/** Aceptar términos y aviso de privacidad: obligatorio para crear la cuenta o seguir usándola. */
+function TermsCheck({ checked, onChange }) {
+  return (
+    <label className="auth-check">
+      <input type="checkbox" required checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span>
+        He leído y acepto los <a href={LEGAL_PATHS.terminos} target="_blank" rel="noreferrer">Términos y condiciones</a> y
+        el <a href={LEGAL_PATHS.privacidad} target="_blank" rel="noreferrer">Aviso de privacidad</a>.
+      </span>
+    </label>
   )
 }
 
@@ -53,7 +67,7 @@ function GoogleMark() {
 
 export function Login() {
   const [mode, setMode] = useState('login') // login | signup | forgot
-  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '' })
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirm: '', terms: false })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
@@ -86,7 +100,8 @@ export function Login() {
         const { error } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
-          options: { data: { full_name: form.fullName }, emailRedirectTo: here(nextPath()) },
+          // La aceptación viaja con la cuenta: el backend la registra al crear el perfil
+          options: { data: { full_name: form.fullName, terms_version: LEGAL_VERSION }, emailRedirectTo: here(nextPath()) },
         })
         if (error) throw error
         setInfo(`Te enviamos un correo a ${form.email}. Abre el enlace para confirmar tu cuenta.`)
@@ -159,6 +174,7 @@ export function Login() {
             onConfirm={(confirm) => setForm({ ...form, confirm })}
           />
         )}
+        {mode === 'signup' && <TermsCheck checked={form.terms} onChange={(terms) => setForm({ ...form, terms })} />}
         <Notice>{error}</Notice>
         <Notice kind="info">{info}</Notice>
         <button className="btn btn-clay btn-block" disabled={busy}>
@@ -209,8 +225,36 @@ export function Account() {
 
   if (error) return <AuthLayout title="No pudimos cargar tu cuenta"><Notice>{error}</Notice></AuthLayout>
   if (!me) return <AuthLayout title="Cargando tu cuenta…" />
+  if (me.missing.length === 1 && me.missing[0] === 'terms') return <AcceptTerms onDone={setMe} />
   if (!me.isComplete) return <CompleteProfile me={me} onDone={setMe} />
   return <Panel me={me} onMe={setMe} />
+}
+
+/** Ya tiene sus datos completos, pero no ha aceptado los documentos legales vigentes. */
+function AcceptTerms({ onDone }) {
+  const [terms, setTerms] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const submit = async (e) => {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      onDone(await api('/me', { method: 'PATCH', body: { acceptTerms: terms } }))
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
+  }
+  return (
+    <AuthLayout title="Antes de seguir" lead="Para usar la app necesitamos que leas y aceptes nuestros documentos legales.">
+      <form className="auth-form" onSubmit={submit}>
+        <TermsCheck checked={terms} onChange={setTerms} />
+        <Notice>{error}</Notice>
+        <button className="btn btn-clay btn-block" disabled={busy}>{busy ? 'Guardando…' : 'Aceptar y continuar'}</button>
+      </form>
+    </AuthLayout>
+  )
 }
 
 function CompleteProfile({ me, onDone }) {
@@ -225,7 +269,10 @@ function CompleteProfile({ me, onDone }) {
     heightCm: h?.heightCm ?? '',
     specialConditions: h?.specialConditions ?? '',
     consent: false,
+    terms: false,
   })
+  // Cuentas nuevas, invitadas o con documentos legales que cambiaron
+  const needsTerms = me.missing.includes('terms')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
@@ -243,6 +290,7 @@ function CompleteProfile({ me, onDone }) {
           phone: form.phone,
           birthDate: form.birthDate,
           ...(isStudent && { address: form.address }),
+          ...(needsTerms && { acceptTerms: form.terms }),
         },
       })
       if (isStudent) {
@@ -317,11 +365,15 @@ function CompleteProfile({ me, onDone }) {
             </label>
             <label className="auth-check">
               <input type="checkbox" required checked={form.consent} onChange={set('consent')} />
-              <span>Acepto que Nara Studio guarde estos datos de salud para cuidar mi entrenamiento.</span>
+              <span>
+                Acepto que Nara Studio guarde estos datos de salud para cuidar mi entrenamiento, como dice
+                el <a href={LEGAL_PATHS.privacidad} target="_blank" rel="noreferrer">Aviso de privacidad</a>.
+              </span>
             </label>
           </fieldset>
         )}
 
+        {needsTerms && <TermsCheck checked={form.terms} onChange={(terms) => setForm({ ...form, terms })} />}
         <Notice>{error}</Notice>
         <button className="btn btn-clay btn-block" disabled={busy}>{busy ? 'Guardando…' : 'Guardar y continuar'}</button>
       </form>

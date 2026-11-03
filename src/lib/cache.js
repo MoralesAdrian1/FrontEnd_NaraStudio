@@ -1,8 +1,10 @@
 /**
  * Caché en localStorage de las respuestas que cambian poco (planes, coaches, clases…), para no
  * pedirlas al backend en cada visita. Nunca se guardan reservas, membresías, sesiones (cupos),
- * alumnas ni pagos: eso siempre se pide fresco.
+ * alumnas ni pagos: eso siempre se pide fresco. Solo se usa si la visitante aceptó el
+ * almacenamiento de rendimiento (consent.js); si lo rechaza, se borra lo guardado.
  */
+import { getConsent, onConsent } from './consent.js'
 
 const PREFIX = 'nara:v1:'
 const MIN = 60_000
@@ -40,7 +42,7 @@ function userId() {
 const keyOf = (path) => `${PREFIX}${userId()}:${path}`
 const segment = (path) => path.split(/[/?]/)[1]
 
-export const isCached = (path) => path in TTL
+export const isCached = (path) => path in TTL && getConsent() === 'all'
 
 /** Lo guardado para esta ruta: { data, fresh } o null. */
 export function peek(path) {
@@ -62,16 +64,23 @@ export function remember(path, data) {
   }
 }
 
-/** Después de crear, editar o borrar algo: olvida lo guardado de esa sección (de todas las cuentas). */
-export function forget(path) {
-  const sections = [segment(path), ...(ALSO_CLEARS[segment(path)] ?? [])]
+/** Borra lo guardado cuya ruta cumple match (de todas las cuentas). */
+function clear(match) {
   try {
     for (const key of Object.keys(localStorage)) {
       if (!key.startsWith(PREFIX)) continue
-      const cached = key.slice(key.indexOf(':', PREFIX.length) + 1)
-      if (sections.includes(segment(cached))) localStorage.removeItem(key)
+      if (match(key.slice(key.indexOf(':', PREFIX.length) + 1))) localStorage.removeItem(key)
     }
   } catch {
     // Almacenamiento bloqueado: no hay nada que borrar
   }
 }
+
+/** Después de crear, editar o borrar algo: olvida lo guardado de esa sección. */
+export function forget(path) {
+  const sections = [segment(path), ...(ALSO_CLEARS[segment(path)] ?? [])]
+  clear((cached) => sections.includes(segment(cached)))
+}
+
+// Si rechaza la caché de rendimiento, no se queda nada guardado
+onConsent((value) => value !== 'all' && clear(() => true))

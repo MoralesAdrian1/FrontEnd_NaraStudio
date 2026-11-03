@@ -1,0 +1,20 @@
+/* Documentos legales y aviso de almacenamiento */
+.legal { display: grid; gap: 18px; text-align: left; line-height: 1.6; }
+.legal-date { color: var(--muted); font-size: var(--step-small); }
+.legal section { display: grid; gap: 8px; }
+.legal h2 { font-family: var(--display); font-weight: 600; text-transform: uppercase; font-size: 1.125rem; }
+.legal ul { display: grid; gap: 6px; padding-left: 1.2em; list-style: disc; }
+.legal-nav, .legal-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.legal-nav { padding-top: 12px; border-top: 1px solid rgb(0 0 0 / 0.08); }
+.legal-prefs { padding: 14px 16px; border-radius: 16px; background: rgb(255 255 255 / 0.55); }
+
+.legal-links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.legal-links button { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
+
+.consent {
+  position: fixed; z-index: 60; left: 16px; right: 16px; bottom: 16px;
+  max-width: 720px; margin-inline: auto; padding: 16px 18px; border-radius: 20px;
+  display: grid; gap: 12px; font-size: 0.95rem; line-height: 1.5;
+  box-shadow: 0 12px 40px rgb(59 45 39 / 0.18);
+}
+.consent a { text-decoration: underline; }
