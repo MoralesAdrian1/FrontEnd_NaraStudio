@@ -186,8 +186,6 @@ function Blobs() {
   )
 }
 
-const wa = (text) => `https://wa.me/${studio.whatsapp}?text=${encodeURIComponent(text)}`
-const WA = wa('Hola Nara, quiero reservar mi primera clase.')
 const money = (n) => `$${n.toLocaleString('es-MX')}`
 
 function Header() {
@@ -227,8 +225,8 @@ function Hero({ next }) {
           mujer fortalezca su cuerpo y disfrute su proceso.
         </p>
         <div className="actions">
-          <a className="btn btn-clay" href={WA} target="_blank" rel="noreferrer">Reserva tu primera clase</a>
-          <a className="btn btn-glass" href="#horario">Ver horario</a>
+          <a className="btn btn-clay" href="#horario">Reserva tu primera clase</a>
+          <a className="btn btn-glass" href="#clases">Ver clases y planes</a>
         </div>
       </div>
 
@@ -770,7 +768,7 @@ function Footer() {
           </nav>
           <div>
             <p>{studio.address}<br />{studio.city}</p>
-            <p><a href={studio.instagram} target="_blank" rel="noreferrer">Instagram</a></p>
+            {studio.instagram && <p><a href={studio.instagram} target="_blank" rel="noreferrer">Instagram</a></p>}
           </div>
           <p className="credits">Imágenes: {credits.join(' · ')}.</p>
         </div>

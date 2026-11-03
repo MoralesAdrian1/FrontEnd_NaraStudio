@@ -1,4 +1,4 @@
-// Contenido del sitio. Todo lo marcado "EJEMPLO" debe reemplazarse con datos reales antes de publicar.
+// Contenido del sitio.
 
 export const studio = {
   name: 'Nara Studio',
@@ -9,13 +9,11 @@ export const studio = {
   // Punto exacto tomado del enlace de Google Maps del estudio
   coords: [21.1621415, -100.9265285],
   mapsUrl: 'https://maps.app.goo.gl/e9Xo1NU29e2RSMzP9',
-  // EJEMPLO: número de WhatsApp en formato internacional, sin signos
-  whatsapp: '524180000000',
   // Grupo de WhatsApp de las alumnas (sección "Grupo de WhatsApp" del panel)
   whatsappGroup: 'https://chat.whatsapp.com/HjSiIHdYrVZLFPE6nD4TpY',
-  instagram: 'https://instagram.com/narastudio', // EJEMPLO
+  instagram: null, // enlace al perfil cuando lo tengan
   hours: [
-    ['Lunes a viernes', '6:30 – 21:15'], // EJEMPLO: confirmar
+    ['Lunes a viernes', '6:30 – 21:15'],
     ['Sábado', 'Cerrado'],
     ['Domingo', 'Cerrado'],
   ],
