@@ -1,4 +1,4 @@
-import { studio } from '../data/studio.js'
+import { studio } from '@brand/studio.js'
 import { Section } from './ui.jsx'
 
 /** Grupo de WhatsApp del estudio: avisos, cambios de horario y comunidad. */
@@ -12,7 +12,7 @@ export default function Community() {
           </svg>
           <div className="p-stack">
             <p>
-              Únete al grupo de Nara Studio para enterarte de avisos, cambios de horario, clases especiales y todo lo que pasa en el estudio.
+              Únete al grupo de {studio.name} para enterarte de avisos, cambios de horario, clases especiales y todo lo que pasa en el estudio.
             </p>
             <div className="p-actions">
               <a className="btn btn-clay" href={studio.whatsappGroup} target="_blank" rel="noopener noreferrer">Unirme al grupo</a>

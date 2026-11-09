@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { studio } from '../data/studio.js'
+import { studio } from '@brand/studio.js'
 
 export default function StudioMap() {
   const el = useRef(null)
@@ -15,7 +15,7 @@ export default function StudioMap() {
 
     const icon = L.divIcon({
       className: 'pin',
-      html: '<span>Nara</span>',
+      html: `<span>${studio.shortName}</span>`,
       iconSize: [64, 76],
       iconAnchor: [32, 76],
       popupAnchor: [0, -70],

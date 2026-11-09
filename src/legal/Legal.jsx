@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AuthLayout } from '../auth/AuthPages.jsx'
 import { LEGAL, LEGAL_PATHS, LEGAL_UPDATED } from '../data/legal.js'
 import { getConsent, onConsent, resetConsent, setConsent } from '../lib/consent.js'
+import { studio } from '@brand/studio.js'
 import './legal.css'
 
 const NAMES = { terminos: 'Términos y condiciones', privacidad: 'Aviso de privacidad', cookies: 'Cookies y almacenamiento' }
@@ -10,7 +11,7 @@ const NAMES = { terminos: 'Términos y condiciones', privacidad: 'Aviso de priva
 export function LegalPage({ doc }) {
   const { title, lead, sections } = LEGAL[doc]
   useEffect(() => {
-    document.title = `${title} · Nara Studio`
+    document.title = `${title} · ${studio.name}`
   }, [title])
   return (
     <AuthLayout wide title={title} lead={lead}>

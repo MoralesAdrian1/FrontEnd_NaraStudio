@@ -7,6 +7,7 @@ import Panel from '../panel/Panel.jsx'
 import { passwordProblem } from '../lib/password.js'
 import PasswordFields from './PasswordFields.jsx'
 import { LEGAL_PATHS, LEGAL_VERSION } from '../data/legal.js'
+import { studio } from '@brand/studio.js'
 
 const go = (path) => window.location.assign(path)
 const here = (path) => `${window.location.origin}${path}`
@@ -25,7 +26,7 @@ export function AuthLayout({ title, lead, children, wide = false }) {
       </div>
       <a className="auth-back" href="/">← Volver al inicio</a>
       <main className={`auth-card glass ${wide ? 'wide' : ''}`}>
-        <img className="auth-logo" src="/img/nara-logo-dark.png" alt="Nara Studio, habita tu cuerpo" width="180" height="81" />
+        <img className="auth-logo" src={studio.logo.dark} alt={studio.logo.alt} width="180" height="81" />
         <h1>{title}</h1>
         {lead && <p className="auth-lead">{lead}</p>}
         {children}
@@ -386,7 +387,7 @@ function CompleteProfile({ me, onDone }) {
             <label className="auth-check">
               <input type="checkbox" required checked={form.consent} onChange={set('consent')} />
               <span>
-                Acepto que Nara Studio guarde estos datos de salud para cuidar mi entrenamiento, como dice
+                Acepto que {studio.name} guarde estos datos de salud para cuidar mi entrenamiento, como dice
                 el <a href={LEGAL_PATHS.privacidad} target="_blank" rel="noreferrer">Aviso de privacidad</a>.
               </span>
             </label>
@@ -463,7 +464,7 @@ export function ResetPassword() {
   return (
     <AuthLayout
       title={invited ? 'Crea tu contraseña' : 'Nueva contraseña'}
-      lead={invited ? 'Bienvenida a Nara Studio. Con esta contraseña y tu correo entras a la app.' : undefined}
+      lead={invited ? `Bienvenida a ${studio.name}. Con esta contraseña y tu correo entras a la app.` : undefined}
     >
       <form className="auth-form" onSubmit={submit}>
         <PasswordFields password={password} confirm={confirm} onPassword={setPassword} onConfirm={setConfirm} label="Contraseña nueva" />

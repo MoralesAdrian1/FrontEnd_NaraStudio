@@ -15,6 +15,6 @@
   position: fixed; z-index: 60; left: 16px; right: 16px; bottom: 16px;
   max-width: 720px; margin-inline: auto; padding: 16px 18px; border-radius: 20px;
   display: grid; gap: 12px; font-size: 0.95rem; line-height: 1.5;
-  box-shadow: 0 12px 40px rgb(59 45 39 / 0.18);
+  box-shadow: 0 12px 40px rgb(var(--field-rgb) / 0.18);
 }
 .consent a { text-decoration: underline; }

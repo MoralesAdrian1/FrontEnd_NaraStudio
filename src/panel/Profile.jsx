@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { studio } from '@brand/studio.js'
 import { api } from '../lib/api.js'
 import { uploadStudentPhoto } from '../lib/storage.js'
 import { Notice, Section, StudentPhoto } from './ui.jsx'
@@ -141,7 +142,7 @@ export default function Profile({ me, onMe }) {
             </label>
             <label className="auth-check">
               <input type="checkbox" required checked={health.consent} onChange={setH('consent')} />
-              <span>Acepto que Nara Studio guarde estos datos de salud para cuidar mi entrenamiento.</span>
+              <span>Acepto que {studio.name} guarde estos datos de salud para cuidar mi entrenamiento.</span>
             </label>
             <Notice>{care.error}</Notice>
             <button className="btn btn-clay" disabled={care.busy}>{care.busy ? 'Guardando…' : 'Guardar'}</button>

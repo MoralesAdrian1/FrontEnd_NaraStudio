@@ -41,7 +41,7 @@
   background: #fff; border: 1px solid var(--surface-2);
   transition: transform 0.3s var(--spring), box-shadow 0.2s;
 }
-.auth-provider:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgb(59 45 39 / 0.12); }
+.auth-provider:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgb(var(--field-rgb) / 0.12); }
 
 .auth-or { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: var(--step-small); max-width: none; }
 .auth-or::before, .auth-or::after { content: ''; flex: 1; height: 1px; background: var(--surface-2); }

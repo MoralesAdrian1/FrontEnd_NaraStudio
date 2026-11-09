@@ -1,7 +1,17 @@
-// Contenido del sitio.
+// Marca de Nara Studio: datos, textos de la landing, logos e imágenes.
+// Para otro estudio: copia esta carpeta (src/brands/<id>) y cambia lo de aquí,
+// theme.css (colores y letras) y meta.js (título, descripción y favicon).
+import logoDark from './img/nara-logo-dark.png'
+import logoLight from './img/nara-logo-light.png'
+import imgBarre from './img/dancers-practicing-at-the-barre.jpg'
+import imgBallet from './img/ballet-at-the-paris-opera.jpg'
+import imgAcrobats from './img/acrobats-at-the-cirque-fernando-francisca-and.jpg'
+import imgCity from './img/azoteas-de-dolores-hidalgo-gto.jpg'
 
 export const studio = {
   name: 'Nara Studio',
+  // Nombre corto: el pin del mapa, "En Nara:" y el saludo de WhatsApp
+  shortName: 'Nara',
   tagline: 'Fitness enfocado a ti',
   slogan: 'Habita tu cuerpo',
   address: 'Calle Salamanca 14, col. Sop',
@@ -17,6 +27,10 @@ export const studio = {
   instagram: 'https://www.instagram.com/nara_studio26/',
   tiktok: 'https://www.tiktok.com/@nadlesp',
   facebook: 'https://www.facebook.com/share/1DkzTX8Mvb/',
+  // Logo oscuro (sobre fondo claro) y claro (pie de página, fondo oscuro)
+  logo: { dark: logoDark, light: logoLight, alt: 'Nara Studio, habita tu cuerpo' },
+  // Responsable legal (términos y aviso de privacidad) y correo de contacto
+  legal: { name: 'Nadia Patrón López', email: 'hola@narastudio.website' },
   hours: [
     ['Lunes a viernes', '6:30 – 21:15'],
     ['Sábado', 'Cerrado'],
@@ -28,7 +42,10 @@ export const disciplines = [
   {
     id: 'barre',
     name: 'Barre',
-    image: '/img/dancers-practicing-at-the-barre.jpg',
+    // Color de fondo de las coaches de esta disciplina y quién la imparte si el backend no responde
+    tone: '#e7c9c2',
+    profile: 'nadia',
+    image: imgBarre,
     imageAlt: 'Pintura de Degas: dos bailarinas estiran la pierna sobre la barra de ensayo',
     classes: 'Barre & Sculpt · Barre Restore',
     details: ['60 minutos', 'Todos los niveles', 'Calcetas antiderrapantes'],
@@ -36,12 +53,12 @@ export const disciplines = [
       {
         name: 'Barre',
         text: 'Entrenamiento de bajo impacto inspirado en el ballet, el Pilates y el acondicionamiento físico. Con movimientos controlados, equilibrio y fuerza, fortalece y tonifica piernas, glúteos, brazos y abdomen, y trabaja la postura y la conexión entre cuerpo y mente.',
-        inNara: 'Aprender a moverte con intención, desarrollar fuerza desde el control y sentirte fuerte desde adentro hacia afuera.',
+        inStudio: 'Aprender a moverte con intención, desarrollar fuerza desde el control y sentirte fuerte desde adentro hacia afuera.',
       },
       {
         name: 'Sculpt',
         text: 'Fortalecimiento y acondicionamiento muscular con fuerza funcional, resistencia, peso y pequeños intervalos cardiovasculares, en secuencias dinámicas que trabajan distintos grupos musculares.',
-        inNara: 'La fuerza, la determinación y la capacidad de descubrir todo lo que tu cuerpo puede lograr.',
+        inStudio: 'La fuerza, la determinación y la capacidad de descubrir todo lo que tu cuerpo puede lograr.',
       },
     ],
     plans: [
@@ -53,7 +70,9 @@ export const disciplines = [
   {
     id: 'trampolin',
     name: 'Trampolín',
-    image: '/img/acrobats-at-the-cirque-fernando-francisca-and.jpg',
+    tone: '#d8c3ae',
+    profile: 'juana',
+    image: imgAcrobats,
     imageAlt: 'Pintura de Renoir: dos jóvenes acróbatas en la pista del circo',
     classes: 'Jump',
     details: ['60 minutos', 'Todos los niveles', 'Tenis limpios'],
@@ -61,7 +80,7 @@ export const disciplines = [
       {
         name: 'Jump',
         text: 'Disciplina cardiovascular sobre un trampolín individual, con secuencias de saltos y desplazamientos al ritmo de la música. Mejora la resistencia, la coordinación y la agilidad, y permite un trabajo intenso de bajo impacto relativo gracias a la superficie elástica.',
-        inNara: 'Energía, diversión y movimiento. Una forma diferente de desafiarte, liberar energía y disfrutar mientras entrenas.',
+        inStudio: 'Energía, diversión y movimiento. Una forma diferente de desafiarte, liberar energía y disfrutar mientras entrenas.',
       },
     ],
     plans: [
@@ -166,16 +185,16 @@ export const vision =
 
 // Imágenes de la galería. Reemplazar por fotos reales del estudio en /public/estudio.
 export const gallery = [
-  { src: '/img/dancers-practicing-at-the-barre.jpg', alt: 'Dos bailarinas estirando en la barra, pintura de Degas', caption: 'La barra: de los salones de ensayo del ballet a nuestra sala.' },
-  { src: '/img/ballet-at-the-paris-opera.jpg', alt: 'Bailarinas en escena en la Ópera de París, pastel de Degas', caption: 'Postura, ritmo y grupo: lo que el barre toma del ballet.' },
-  { src: '/img/acrobats-at-the-cirque-fernando-francisca-and.jpg', alt: 'Dos acróbatas en la pista de un circo, pintura de Renoir', caption: 'El rebote y el equilibrio vienen de la acrobacia.' },
-  { src: '/img/azoteas-de-dolores-hidalgo-gto.jpg', alt: 'Azoteas de Dolores Hidalgo con la parroquia al fondo', caption: 'A unas cuadras de la parroquia de Dolores.' },
+  { src: imgBarre, alt: 'Dos bailarinas estirando en la barra, pintura de Degas', caption: 'La barra: de los salones de ensayo del ballet a nuestra sala.' },
+  { src: imgBallet, alt: 'Bailarinas en escena en la Ópera de París, pastel de Degas', caption: 'Postura, ritmo y grupo: lo que el barre toma del ballet.' },
+  { src: imgAcrobats, alt: 'Dos acróbatas en la pista de un circo, pintura de Renoir', caption: 'El rebote y el equilibrio vienen de la acrobacia.' },
+  { src: imgCity, alt: 'Azoteas de Dolores Hidalgo con la parroquia al fondo', caption: 'A unas cuadras de la parroquia de Dolores.' },
 ]
 
 // Videos demo. Pon el archivo en /public/video y escribe la ruta en `src`.
 export const demos = [
-  { id: 'barre', title: 'Así se siente una clase de barre', src: null, poster: '/img/dancers-practicing-at-the-barre.jpg' },
-  { id: 'trampolin', title: 'Así se siente una clase de trampolín', src: null, poster: '/img/acrobats-at-the-cirque-fernando-francisca-and.jpg' },
+  { id: 'barre', title: 'Así se siente una clase de barre', src: null, poster: imgBarre },
+  { id: 'trampolin', title: 'Así se siente una clase de trampolín', src: null, poster: imgAcrobats },
 ]
 
 export const credits = [
@@ -185,3 +204,38 @@ export const credits = [
   '“Azoteas de Dolores Hidalgo, Gto”, Juan Carlos Fonseca Mata, CC BY-SA 4.0, Wikimedia Commons',
   'Mapa © colaboradores de OpenStreetMap',
 ]
+
+// Tipos de clase del horario, en orden: cada uno toma un color (1.º --rose, 2.º --sand, 3.º --earth).
+// match: nombre de la clase o slug de la disciplina (el nombre gana).
+export const classKinds = [
+  { match: 'barre', label: 'Barre & Sculpt' },
+  { match: 'Barre Restore', label: 'Barre Restore' },
+  { match: 'trampolin', label: 'Jump (trampolín)' },
+]
+
+// Textos de la landing
+export const copy = {
+  heroTitle: 'Habita tu cuerpo',
+  heroLead:
+    'Un espacio de movimiento, bienestar y conexión personal en Dolores Hidalgo, para que cada mujer fortalezca su cuerpo y disfrute su proceso.',
+  heroImage: { src: imgBarre, alt: 'Pintura de Degas: dos bailarinas estiran la pierna sobre la barra de ensayo' },
+  heroChips: ['Barre · 60 min', 'Trampolín · 60 min'],
+  marquee: ['Barre', 'Sculpt', 'Jump', 'Habita tu cuerpo', 'Fortalece tu esencia', 'Honra tu proceso', 'Crece a tu manera'],
+  aboutTitle: 'Más que un estudio, somos una familia',
+  aboutImage: { src: imgBallet, alt: 'Pastel de Degas: bailarinas en escena en la Ópera de París' },
+  motto: ['Habita tu cuerpo.', 'Honra tu proceso.', 'Crece a tu manera.'],
+  classesLead: 'Clases de 60 minutos, de lunes a viernes. Elige el plan que va con tu ritmo.',
+  comboLead: 'Las dos disciplinas, todas las clases que quieras.',
+  scheduleLine: 'Mueve tu cuerpo, transforma tu día',
+  teamTitle: 'Nuestras instructoras',
+  teamLead: 'Pasa el cursor o desliza entre las tarjetas. Abre su perfil para ver sus horarios y más sobre ella.',
+  essenceTitle: 'Volver a ti a través del movimiento',
+  essenceLead:
+    'Un lugar donde la fuerza física se encuentra con el bienestar personal. Entrenar no tiene que ser un castigo ni una obligación: puede ser un acto de amor propio, disciplina, constancia y conexión contigo.',
+  essenceLine: 'Habita tu cuerpo, fortalece tu esencia.',
+  galleryLead:
+    'Una sala amplia con barra de pared a pared, espejos y trampolines individuales. Ven a una clase muestra o pasa a conocernos en horario de recepción.',
+  galleryFact: ['60', 'minutos por clase, de lunes a viernes.'],
+  demosLead: 'Un vistazo a la música, el ritmo y el tipo de ejercicio de cada disciplina.',
+  locationLead: 'A tres cuadras al sur de la parroquia de Nuestra Señora de los Dolores.',
+}

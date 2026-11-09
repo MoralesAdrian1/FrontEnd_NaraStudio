@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { combo, credits, demos, disciplines, gallery, instructors, mission, philosophy, schedule, studio, vision } from './data/studio.js'
+import { classKinds, combo, copy, credits, demos, disciplines, gallery, instructors, mission, philosophy, schedule, studio, vision } from '@brand/studio.js'
 import InstructorDialog from './components/InstructorDialog.jsx'
 import StudioMap from './components/StudioMap.jsx'
 import { supabase } from './lib/supabase.js'
@@ -13,9 +13,9 @@ import { LegalLinks } from './legal/Legal.jsx'
 const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]))
 const INSTRUCTOR = byId(instructors)
 // Perfil fijo (studio.js) de quien imparte cada disciplina: solo si el backend no responde
-const PROFILE_BY_DISCIPLINE = { barre: 'nadia', trampolin: 'juana' }
+const PROFILE_BY_DISCIPLINE = Object.fromEntries(disciplines.map((d) => [d.id, d.profile]))
 
-const TONES = { barre: '#e7c9c2', trampolin: '#d8c3ae' }
+const TONES = Object.fromEntries(disciplines.map((d) => [d.id, d.tone]))
 const LOOKS = instructors.map((p) => p.look)
 const SHORT_MAX = 170
 
@@ -23,14 +23,14 @@ const SHORT_MAX = 170
 function toPerson(c, i) {
   const story = (c.bio ?? '').split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean)
   const disciplines = c.disciplines.map((d) => d.name).join(' · ')
-  const first = story[0] ?? `Imparte ${disciplines} en Nara Studio.`
+  const first = story[0] ?? `Imparte ${disciplines} en ${studio.name}.`
   return {
     id: c.id,
     name: c.name,
     role: c.isHeadCoach ? `Head coach · ${disciplines}` : disciplines,
     isHeadCoach: c.isHeadCoach,
     photo: publicUrl(c.photoPath),
-    tone: TONES[c.disciplines[0]?.slug] ?? TONES.barre,
+    tone: TONES[c.disciplines[0]?.slug] ?? disciplines[0].tone,
     look: LOOKS[i % LOOKS.length],
     years: null,
     short: first.length > SHORT_MAX ? `${first.slice(0, SHORT_MAX).replace(/\s+\S*$/, '')}…` : first,
@@ -201,7 +201,7 @@ function Blobs() {
 }
 
 const wa = (text) => `https://wa.me/${studio.whatsapp}?text=${encodeURIComponent(text)}`
-const WHATSAPP = wa('Hola Nara, tengo una duda sobre las clases.')
+const WHATSAPP = wa(`Hola ${studio.shortName}, tengo una duda sobre las clases.`)
 const SOCIAL = [['Instagram', studio.instagram], ['TikTok', studio.tiktok], ['Facebook', studio.facebook]]
 const money = (n) => `$${n.toLocaleString('es-MX')}`
 
@@ -216,7 +216,7 @@ function Header() {
     <header className="bar">
       <div className="bar-inner glass">
         <a className="logo" href="#inicio">
-          <img src="/img/nara-logo-dark.png" alt="Nara Studio, habita tu cuerpo" width="160" height="72" />
+          <img src={studio.logo.dark} alt={studio.logo.alt} width="160" height="72" />
         </a>
         <nav aria-label="Principal">
           <a href="#clases">Clases</a>
@@ -236,11 +236,8 @@ function Hero({ next }) {
     <section className="hero wrap" id="inicio">
       <div className="hero-copy" data-reveal>
         <p className="hero-name">{studio.name} · {studio.tagline}</p>
-        <h1>Habita tu cuerpo</h1>
-        <p className="lead">
-          Un espacio de movimiento, bienestar y conexión personal en Dolores Hidalgo, para que cada
-          mujer fortalezca su cuerpo y disfrute su proceso.
-        </p>
+        <h1>{copy.heroTitle}</h1>
+        <p className="lead">{copy.heroLead}</p>
         <div className="actions">
           <a className="btn btn-clay" href="#horario">Reserva tu primera clase</a>
           <a className="btn btn-glass" href="#clases">Ver clases y planes</a>
@@ -250,11 +247,7 @@ function Hero({ next }) {
       <div className="hero-visual">
         <div className="hero-ring" aria-hidden="true" />
         <div className="hero-photo arch shutter">
-          <img
-            src="/img/dancers-practicing-at-the-barre.jpg"
-            alt="Pintura de Degas: dos bailarinas estiran la pierna sobre la barra de ensayo"
-            loading="eager"
-          />
+          <img src={copy.heroImage.src} alt={copy.heroImage.alt} loading="eager" />
         </div>
         {next && (
           <div className="next-card glass float-a">
@@ -264,15 +257,16 @@ function Hero({ next }) {
             </span>
           </div>
         )}
-        <span className="chip-clay chip-1 float-b">Barre · 60 min</span>
-        <span className="chip-clay chip-2 float-a">Trampolín · 60 min</span>
+        {copy.heroChips.slice(0, 2).map((chip, i) => (
+          <span key={chip} className={`chip-clay chip-${i + 1} ${i ? 'float-a' : 'float-b'}`}>{chip}</span>
+        ))}
       </div>
     </section>
   )
 }
 
 function Marquee() {
-  const words = ['Barre', 'Sculpt', 'Jump', 'Habita tu cuerpo', 'Fortalece tu esencia', 'Honra tu proceso', 'Crece a tu manera']
+  const words = copy.marquee
   const row = (
     <span className="marquee-row">
       {words.map((w) => <span key={w}>{w}<i aria-hidden="true" /></span>)}
@@ -291,14 +285,12 @@ function About({ people, onOpen }) {
     <section className="about wrap" id="nosotras" aria-labelledby="about-title">
       <div className="about-panel glass" data-reveal>
         <div className="about-photo arch">
-          <img src="/img/ballet-at-the-paris-opera.jpg" alt="Pastel de Degas: bailarinas en escena en la Ópera de París" loading="lazy" />
+          <img src={copy.aboutImage.src} alt={copy.aboutImage.alt} loading="lazy" />
         </div>
         <div className="about-text">
-          <h2 id="about-title">Más que un estudio, somos una familia</h2>
+          <h2 id="about-title">{copy.aboutTitle}</h2>
           <ul className="motto">
-            <li className="clay-card">Habita tu cuerpo.</li>
-            <li className="clay-card rose">Honra tu proceso.</li>
-            <li className="clay-card sand">Crece a tu manera.</li>
+            {copy.motto.map((m, i) => <li key={m} className={`clay-card ${['', 'rose', 'sand'][i % 3]}`}>{m}</li>)}
           </ul>
           {founder && (
             <figure className="founder clay-card rose">
@@ -346,7 +338,7 @@ function usePlans() {
 const wantLink = (p, what) =>
   p.id
     ? { href: `/cuenta?plan=${p.id}#membresias` }
-    : { href: wa(`Hola Nara, quiero ${what} (${money(p.price)}).`), target: '_blank', rel: 'noreferrer' }
+    : { href: wa(`Hola ${studio.shortName}, quiero ${what} (${money(p.price)}).`), target: '_blank', rel: 'noreferrer' }
 
 function Classes() {
   const live = usePlans()
@@ -356,7 +348,7 @@ function Classes() {
     <section className="classes wrap" id="clases" aria-labelledby="clases-title">
       <div className="section-head" data-reveal>
         <h2 id="clases-title">Clases y planes</h2>
-        <p>Clases de 60 minutos, de lunes a viernes. Elige el plan que va con tu ritmo.</p>
+        <p>{copy.classesLead}</p>
       </div>
 
       <div className="disc-grid">
@@ -374,7 +366,7 @@ function Classes() {
                   <div key={st.name} className="style">
                     {d.styles.length > 1 && <h4>{st.name}</h4>}
                     <p>{st.text}</p>
-                    <p className="in-nara"><b>En Nara:</b> {st.inNara}</p>
+                    <p className="in-studio"><b>En {studio.shortName}:</b> {st.inStudio}</p>
                   </div>
                 ))}
               </div>
@@ -401,7 +393,7 @@ function Classes() {
         <div className="combo" data-reveal>
           <div>
             <h3>{shownCombo.label}</h3>
-            <p>Las dos disciplinas, todas las clases que quieras.</p>
+            <p>{copy.comboLead}</p>
           </div>
           <b>{money(shownCombo.price)}</b>
           <a className="btn btn-light" {...wantLink(shownCombo, `el plan ${shownCombo.label}`)}>
@@ -413,7 +405,12 @@ function Classes() {
   )
 }
 
-const kind = (c) => (c.name === 'Barre Restore' ? 'restore' : c.discipline)
+/** Tipo de clase (su color en el horario): por nombre y, si no, por disciplina. */
+const kindIndex = (c) => {
+  const byName = classKinds.findIndex((k) => k.match === c.name)
+  return byName >= 0 ? byName : classKinds.findIndex((k) => k.match === c.discipline)
+}
+const kind = (c) => Math.max(kindIndex(c), 0)
 
 /** Lugares de una sesión real; el horario fijo no los conoce. */
 function spots(c) {
@@ -474,9 +471,7 @@ function Schedule({ slots, people, onOpenInstructor }) {
           )}
         </div>
         <ul className="legend">
-          <li className="k-barre">Barre & Sculpt</li>
-          <li className="k-restore">Barre Restore</li>
-          <li className="k-trampolin">Jump (trampolín)</li>
+          {classKinds.map((k, i) => <li key={k.match} className={`k-${i}`}>{k.label}</li>)}
         </ul>
 
         {/* Calendario: escritorio y tableta */}
@@ -555,7 +550,7 @@ function Schedule({ slots, people, onOpenInstructor }) {
           </ul>
         </div>
 
-        <p className="motto-line">Mueve tu cuerpo, transforma tu día</p>
+        <p className="motto-line">{copy.scheduleLine}</p>
       </div>
     </section>
   )
@@ -625,8 +620,8 @@ function Instructors({ people, slots, onOpen }) {
   return (
     <section className="team wrap" id="instructoras" aria-labelledby="team-title">
       <div className="section-head" data-reveal>
-        <h2 id="team-title">Nuestras instructoras</h2>
-        <p>Pasa el cursor o desliza entre las tarjetas. Abre su perfil para ver sus horarios y más sobre ella.</p>
+        <h2 id="team-title">{copy.teamTitle}</h2>
+        <p>{copy.teamLead}</p>
       </div>
       <div className="team-grid" ref={track} onScroll={onScroll}>
         {people.map((p) => <InstructorCard key={p.id} person={p} slots={slots} onOpen={onOpen} />)}
@@ -644,12 +639,8 @@ function Essence() {
   return (
     <section className="essence wrap" id="esencia" aria-labelledby="esencia-title">
       <div className="section-head" data-reveal>
-        <h2 id="esencia-title">Volver a ti a través del movimiento</h2>
-        <p>
-          Un lugar donde la fuerza física se encuentra con el bienestar personal. Entrenar no tiene que
-          ser un castigo ni una obligación: puede ser un acto de amor propio, disciplina, constancia y
-          conexión contigo.
-        </p>
+        <h2 id="esencia-title">{copy.essenceTitle}</h2>
+        <p>{copy.essenceLead}</p>
       </div>
       <ol className="values">
         {philosophy.map(([name, text], i) => (
@@ -670,7 +661,7 @@ function Essence() {
           <p>{vision}</p>
         </article>
       </div>
-      <p className="essence-line" data-reveal>Habita tu cuerpo, fortalece tu esencia.</p>
+      <p className="essence-line" data-reveal>{copy.essenceLine}</p>
     </section>
   )
 }
@@ -680,10 +671,7 @@ function Gallery() {
     <section className="gallery wrap" id="estudio" aria-labelledby="estudio-title">
       <div className="section-head" data-reveal>
         <h2 id="estudio-title">Conoce el estudio</h2>
-        <p>
-          Una sala amplia con barra de pared a pared, espejos y trampolines individuales. Ven a una
-          clase muestra o pasa a conocernos en horario de recepción.
-        </p>
+        <p>{copy.galleryLead}</p>
       </div>
       <div className="bento">
         {gallery.map((g, i) => (
@@ -693,8 +681,8 @@ function Gallery() {
           </figure>
         ))}
         <div className="tile tile-facts clay-card rose" data-reveal>
-          <b>60</b>
-          <span>minutos por clase, de lunes a viernes.</span>
+          <b>{copy.galleryFact[0]}</b>
+          <span>{copy.galleryFact[1]}</span>
         </div>
       </div>
     </section>
@@ -707,7 +695,7 @@ function Demos() {
       <div className="wrap">
         <div className="section-head" data-reveal>
           <h2 id="videos-title">Mira cómo es una clase</h2>
-          <p>Un vistazo a la música, el ritmo y el tipo de ejercicio de cada disciplina.</p>
+          <p>{copy.demosLead}</p>
         </div>
         <div className="demo-grid">
           {demos.map((d) => (
@@ -737,7 +725,7 @@ function Location() {
     <section className="location wrap" id="ubicacion" aria-labelledby="ubicacion-title">
       <div className="section-head" data-reveal>
         <h2 id="ubicacion-title">Dónde estamos</h2>
-        <p>A tres cuadras al sur de la parroquia de Nuestra Señora de los Dolores.</p>
+        <p>{copy.locationLead}</p>
       </div>
       <div className="location-grid" data-reveal>
         <div className="map-shell">
@@ -775,7 +763,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="wrap">
-        <img className="mark" src="/img/nara-logo-light.png" alt="Nara Studio, habita tu cuerpo" loading="lazy" />
+        <img className="mark" src={studio.logo.light} alt={studio.logo.alt} loading="lazy" />
         <div className="footer-cols">
           <nav aria-label="Secciones">
             <a href="#clases">Clases y planes</a>
@@ -798,7 +786,7 @@ function Footer() {
           <p className="credits">Imágenes: {credits.join(' · ')}.</p>
         </div>
         <div className="footer-last">
-          <p>© {YEAR} Nara Studio</p>
+          <p>© {YEAR} {studio.name}</p>
           <LegalLinks />
           <a className="btn btn-small btn-light" href="#inicio">Volver arriba</a>
         </div>

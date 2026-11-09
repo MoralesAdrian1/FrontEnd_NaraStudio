@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import '../App.css'
 import '../auth/auth.css'
 import './panel.css'
+import { studio } from '@brand/studio.js'
 import { signOutAndLeave } from '../lib/supabase.js'
 import { Closures, Disciplines } from './Admin.jsx'
 import Book from './Book.jsx'
@@ -129,7 +130,7 @@ export default function Panel({ me, onMe }) {
       {/* Teléfono: barra con el logo y el botón del menú */}
       <header className="panel-top glass">
         <a className="logo" href="/" aria-label="Ir al inicio">
-          <img src="/img/nara-logo-dark.png" alt="Nara Studio" width="120" height="54" />
+          <img src={studio.logo.dark} alt={studio.name} width="120" height="54" />
         </a>
         <span className="panel-top-title">{title}</span>
         {badge}
@@ -145,7 +146,7 @@ export default function Panel({ me, onMe }) {
       <aside className="panel-side glass" id="panel-side">
         <div className="panel-side-head">
           <a className="logo" href="/" aria-label="Ir al inicio">
-            <img src="/img/nara-logo-dark.png" alt="Nara Studio" width="120" height="54" />
+            <img src={studio.logo.dark} alt={studio.name} width="120" height="54" />
           </a>
           <span className="panel-side-badge">{badge}</span>
           <button className="auth-link panel-side-close" onClick={() => setMenuOpen(false)}>Cerrar</button>

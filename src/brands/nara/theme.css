@@ -1,0 +1,34 @@
+/* Colores y letras de Nara Studio. Otro estudio: cambia estos valores (mismos nombres). */
+:root {
+  /* Hueso, tierra y rosa bajito, con un terracota para dar energía */
+  --bg: #f3efec;
+  --surface: #e9e2dd;
+  --surface-2: #ded4cd;
+  --ink: #2e2420;
+  --muted: #6b5a51;
+  --rose: #e8c7c0;
+  --rose-deep: #d9aea5;
+  --sand: #e3d3c3;
+  --earth: #6e4f40;
+  --earth-ink: #f7f1ec;
+  --ok: #24592f;
+  --ok-bg: #e2f0dc;
+  --terra: #b5654f;
+  --field: #3b2d27;
+  --field-ink: #f3efec;
+  --blob: #e9b7a8;
+  --deep: #241b17;
+  --on-dark-muted: #cdbfb6;
+  --on-dark-soft: #eadcd3;
+
+  /* Los mismos tonos en canales R G B, para sombras y vidrios con transparencia */
+  --ink-rgb: 46 36 32;
+  --field-rgb: 59 45 39;
+  --earth-rgb: 110 79 64;
+  --deep-rgb: 30 20 16;
+  --paper-rgb: 255 251 248;
+
+  /* Letras: se cargan en meta.js (fonts) */
+  --display: 'Clash Display', 'General Sans', system-ui, sans-serif;
+  --font: 'General Sans', system-ui, sans-serif;
+}

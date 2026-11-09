@@ -1,17 +1,17 @@
 // Documentos legales del sitio. Conviene que un abogado revise los textos.
 // Al cambiar un documento, sube LEGAL_VERSION aquí y TERMS_VERSION en el backend
 // (backend/src/common/legal.ts): todas las cuentas tendrán que aceptarlo de nuevo.
-import { studio } from './studio.js'
+import { studio } from '@brand/studio.js'
 
 export const LEGAL_VERSION = '2026-11-03'
 const UPDATED = '3 de noviembre de 2026'
 
 export const owner = {
-  // Responsable de los datos personales
-  legalName: 'Nadia Patrón López',
+  // Responsable de los datos personales (en src/brands/<estudio>/studio.js)
+  legalName: studio.legal.name,
   address: `${studio.address}, ${studio.city}`,
   // Correo del estudio (el mismo desde el que salen los avisos)
-  email: 'hola@narastudio.website',
+  email: studio.legal.email,
 }
 
 const contact = `Escríbenos a ${owner.email} o acude al estudio en ${owner.address}.`
@@ -19,10 +19,10 @@ const contact = `Escríbenos a ${owner.email} o acude al estudio en ${owner.addr
 export const LEGAL = {
   terminos: {
     title: 'Términos y condiciones',
-    lead: 'Las reglas para usar el sitio y la app de Nara Studio, reservar clases y contratar planes.',
+    lead: `Las reglas para usar el sitio y la app de ${studio.name}, reservar clases y contratar planes.`,
     sections: [
       ['1. Quiénes somos', [
-        `Nara Studio es un estudio de entrenamiento ubicado en ${owner.address}, operado por ${owner.legalName} (“Nara Studio”, “nosotras”).`,
+        `${studio.name} es un estudio de entrenamiento ubicado en ${owner.address}, operado por ${owner.legalName} (“${studio.name}”, “nosotras”).`,
         'Al crear una cuenta, reservar una clase o contratar un plan, aceptas estos términos. Si no estás de acuerdo, no uses la app.',
       ]],
       ['2. Tu cuenta', [
@@ -36,7 +36,7 @@ export const LEGAL = {
         'Puedes cancelar tu reserva desde la app hasta antes de que empiece la clase; si la clase la pagaste con un crédito, lo recuperas.',
         'Si no asistes y no cancelaste, se aplica la política de inasistencias vigente que se muestra en la app: según esa política, la clase puede contar como usada.',
         'Llega a tiempo: la coach pasa lista y, por seguridad, puede no permitir que entres a una clase muy avanzada.',
-        'Nara Studio puede cancelar una clase, cambiar su horario o la coach que la imparte por causas de fuerza mayor, salud o cierre del estudio. Si cancelamos una clase que reservaste, te avisamos por correo y recuperas tu crédito; si la ibas a pagar en efectivo, no pagas nada.',
+        `${studio.name} puede cancelar una clase, cambiar su horario o la coach que la imparte por causas de fuerza mayor, salud o cierre del estudio. Si cancelamos una clase que reservaste, te avisamos por correo y recuperas tu crédito; si la ibas a pagar en efectivo, no pagas nada.`,
       ]],
       ['4. Planes, membresías y pagos', [
         'Los precios se muestran en pesos mexicanos y pueden cambiar; el precio que pagas es el vigente al contratar.',
@@ -47,12 +47,12 @@ export const LEGAL = {
           'Al pagar recibes tu comprobante por correo.',
           'El pago con tarjeta todavía no está disponible.',
         ] },
-        'Salvo cuando Nara Studio cancela una clase, o en los casos que marque la ley, los pagos no se reembolsan. Esto no limita los derechos que te otorga la Ley Federal de Protección al Consumidor.',
+        `Salvo cuando ${studio.name} cancela una clase, o en los casos que marque la ley, los pagos no se reembolsan. Esto no limita los derechos que te otorga la Ley Federal de Protección al Consumidor.`,
       ]],
       ['5. Salud y seguridad', [
         'Barre, Sculpt y Jump son actividades físicas y, como toda actividad física, tienen riesgos. Antes de empezar, y si tienes alguna lesión, embarazo, enfermedad o condición médica, consulta a tu médico.',
         'Al registrarte nos compartes tus datos de salud (lesiones, alergias u otras condiciones) para que tu coach adapte los ejercicios. Mantenlos actualizados y avísale a tu coach de cualquier cambio antes de la clase.',
-        'Sigue las indicaciones de la coach, respeta tus límites y detente si sientes dolor o malestar. En la medida que lo permita la ley, Nara Studio no es responsable de lesiones causadas por no seguir las indicaciones o por no informar una condición de salud.',
+        `Sigue las indicaciones de la coach, respeta tus límites y detente si sientes dolor o malestar. En la medida que lo permita la ley, ${studio.name} no es responsable de lesiones causadas por no seguir las indicaciones o por no informar una condición de salud.`,
       ]],
       ['6. En el estudio', [
         'Trata con respeto a las coaches y a las demás alumnas. Usa calcetas antiderrapantes en Barre y sigue las reglas de uso del equipo.',
@@ -62,7 +62,7 @@ export const LEGAL = {
         'Si subes una foto de perfil, la ven tus coaches en la lista de la clase. En la racha y el ranking de la app se muestra el nombre público que elijas en tu perfil.',
       ]],
       ['8. Propiedad intelectual', [
-        'Los textos, el logotipo, el diseño, las fotos y los videos del sitio y la app son de Nara Studio o de sus autoras, y no puedes usarlos sin permiso.',
+        `Los textos, el logotipo, el diseño, las fotos y los videos del sitio y la app son de ${studio.name} o de sus autoras, y no puedes usarlos sin permiso.`,
       ]],
       ['9. Cambios a estos términos', [
         'Podemos actualizar estos términos. Cuando lo hagamos, cambiaremos la fecha de esta página y te pediremos aceptarlos de nuevo al entrar a la app.',
@@ -79,7 +79,7 @@ export const LEGAL = {
     lead: 'Qué datos personales recabamos, para qué los usamos, con quién los compartimos y cómo ejercer tus derechos.',
     sections: [
       ['1. Responsable', [
-        `${owner.legalName}, que opera Nara Studio, con domicilio en ${owner.address}, es responsable del tratamiento de tus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares.`,
+        `${owner.legalName}, que opera ${studio.name}, con domicilio en ${owner.address}, es responsable del tratamiento de tus datos personales conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares.`,
       ]],
       ['2. Datos que recabamos', [
         { list: [
