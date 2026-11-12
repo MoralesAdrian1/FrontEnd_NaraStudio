@@ -810,7 +810,7 @@ function Location() {
 
 const YEAR = new Date().getFullYear()
 // Quién desarrolló la app (aparece bajo el logo del pie de página)
-const DEVELOPER = 'AML Solutions'
+const DEVELOPER = 'Zenit Labs'
 
 function Footer() {
   return (
