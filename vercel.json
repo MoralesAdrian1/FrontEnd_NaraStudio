@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "rewrites": [{ "source": "/((?!assets/|img/|icons/|fotos/|Videos/|.*\.).*)", "destination": "/index.html" }],
+  "rewrites": [{ "source": "/((?!assets/|img/|icons/|fotos/|Videos/|.*\\.).*)", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/(.*)",
