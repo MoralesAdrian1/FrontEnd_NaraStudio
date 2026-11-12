@@ -194,7 +194,7 @@ export const vision =
 // Galería: fotos reales del estudio (/public/fotos). La primera es la grande.
 export const gallery = [
   { src: photoEntrada, alt: 'Letrero dorado de Nara Studio sobre el ventanal; detrás, la sala con su barra y espejos', caption: 'Bienvenida a tu espacio.' },
-  { src: photoSala, alt: 'Pared de espejos con barra y luz cálida en la sala de Nara Studio', caption: 'Espejos y barra de pared a pared.' },
+  { src: photoEspejo, alt: 'Espejo de Nara Studio con las frases “Abraza lo que ves” y “Ama lo que eres”, entre plantas', caption: 'Abraza lo que ves, ama lo que eres.' },
   { src: photoBarra, alt: 'Barra de ballet con mancuernas de 8 libras', caption: 'Todo listo para tu clase.' },
   { src: photoPesas, alt: 'Tapetes doblados y mancuernas de 5 y 8 libras en el estante', caption: 'Material para cada nivel.' },
 ]
@@ -227,7 +227,7 @@ export const copy = {
   heroChips: ['Barre · 60 min', 'Trampolín · 60 min'],
   marquee: ['Barre', 'Sculpt', 'Jump', 'Habita tu cuerpo', 'Fortalece tu esencia', 'Honra tu proceso', 'Crece a tu manera'],
   aboutTitle: 'Más que un estudio, somos una familia',
-  aboutImage: { src: photoEspejo, alt: 'Espejo de Nara Studio con las frases “Abraza lo que ves” y “Ama lo que eres”, entre plantas' },
+  aboutImage: { src: photoSala, alt: 'La sala de Nara Studio: pared de espejos con barra, luz cálida y piso brillante' },
   motto: ['Habita tu cuerpo.', 'Honra tu proceso.', 'Crece a tu manera.'],
   classesLead: 'Clases de 60 minutos, de lunes a viernes. Elige el plan que va con tu ritmo.',
   comboLead: 'Las dos disciplinas, todas las clases que quieras.',
