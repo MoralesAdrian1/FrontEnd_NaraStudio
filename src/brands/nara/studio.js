@@ -3,13 +3,15 @@
 // theme.css (colores y letras) y meta.js (título, descripción y favicon).
 import logoDark from './img/nara-logo-dark.webp'
 import logoLight from './img/nara-logo-light.webp'
-import imgBarre from './img/dancers-practicing-at-the-barre.webp'
-import imgBallet from './img/ballet-at-the-paris-opera.webp'
 import imgAcrobats from './img/acrobats-at-the-cirque-fernando-francisca-and.webp'
-import imgCity from './img/azoteas-de-dolores-hidalgo-gto.webp'
 
-// Foto y video reales del estudio (en /public)
+// Fotos y video reales del estudio (en /public; originales sin comprimir en ../fotos-originales)
 const photoNadia = '/fotos/Nadia1.webp'
+const photoEntrada = '/fotos/entrada.webp'
+const photoSala = '/fotos/sala-espejos.webp'
+const photoBarra = '/fotos/barra.webp'
+const photoPesas = '/fotos/pesas.webp'
+const photoEspejo = '/fotos/espejo.webp'
 const videoBarre = '/Videos/clase%20de%20barre.mp4'
 
 export const studio = {
@@ -49,8 +51,8 @@ export const disciplines = [
     // Color de fondo de las coaches de esta disciplina y quién la imparte si el backend no responde
     tone: '#e7c9c2',
     profile: 'nadia',
-    image: imgBarre,
-    imageAlt: 'Pintura de Degas: dos bailarinas estiran la pierna sobre la barra de ensayo',
+    image: photoBarra,
+    imageAlt: 'Barra de ballet en la sala de Nara Studio, con mancuernas listas para la clase',
     // Si hay video, se reproduce en silencio en lugar de la imagen (la imagen queda de portada)
     video: videoBarre,
     classes: 'Barre & Sculpt · Barre Restore',
@@ -189,12 +191,12 @@ export const vision =
   'Ser un estudio boutique de referencia en bienestar y entrenamiento femenino, reconocido por ofrecer experiencias de calidad, una atención cercana y una comunidad que promueve el movimiento, la confianza y el amor propio. Buscamos crecer, innovar y ampliar nuestras experiencias sin perder nuestra esencia: crear espacios donde cada mujer descubra su fuerza, disfrute su proceso y conecte con su cuerpo.'
 
 
-// Imágenes de la galería. Reemplazar por fotos reales del estudio en /public/estudio.
+// Galería: fotos reales del estudio (/public/fotos). La primera es la grande.
 export const gallery = [
-  { src: imgBarre, alt: 'Dos bailarinas estirando en la barra, pintura de Degas', caption: 'La barra: de los salones de ensayo del ballet a nuestra sala.' },
-  { src: imgBallet, alt: 'Bailarinas en escena en la Ópera de París, pastel de Degas', caption: 'Postura, ritmo y grupo: lo que el barre toma del ballet.' },
-  { src: imgAcrobats, alt: 'Dos acróbatas en la pista de un circo, pintura de Renoir', caption: 'El rebote y el equilibrio vienen de la acrobacia.' },
-  { src: imgCity, alt: 'Azoteas de Dolores Hidalgo con la parroquia al fondo', caption: 'A unas cuadras de la parroquia de Dolores.' },
+  { src: photoEntrada, alt: 'Letrero dorado de Nara Studio sobre el ventanal; detrás, la sala con su barra y espejos', caption: 'Bienvenida a tu espacio.' },
+  { src: photoSala, alt: 'Pared de espejos con barra y luz cálida en la sala de Nara Studio', caption: 'Espejos y barra de pared a pared.' },
+  { src: photoBarra, alt: 'Barra de ballet con mancuernas de 8 libras', caption: 'Todo listo para tu clase.' },
+  { src: photoPesas, alt: 'Tapetes doblados y mancuernas de 5 y 8 libras en el estante', caption: 'Material para cada nivel.' },
 ]
 
 // Videos demo. Pon el archivo en /public/video y escribe la ruta en `src`.
@@ -204,10 +206,7 @@ export const demos = [
 ]
 
 export const credits = [
-  '“Dancers Practicing at the Barre”, Edgar Degas, 1877, dominio público (CC0), The Metropolitan Museum of Art',
-  '“Ballet at the Paris Opéra”, Edgar Degas, 1877, dominio público (CC0), Art Institute of Chicago',
   '“Acrobats at the Cirque Fernando”, Pierre-Auguste Renoir, 1879, dominio público (CC0), Art Institute of Chicago',
-  '“Azoteas de Dolores Hidalgo, Gto”, Juan Carlos Fonseca Mata, CC BY-SA 4.0, Wikimedia Commons',
   'Mapa © colaboradores de OpenStreetMap',
 ]
 
@@ -228,7 +227,7 @@ export const copy = {
   heroChips: ['Barre · 60 min', 'Trampolín · 60 min'],
   marquee: ['Barre', 'Sculpt', 'Jump', 'Habita tu cuerpo', 'Fortalece tu esencia', 'Honra tu proceso', 'Crece a tu manera'],
   aboutTitle: 'Más que un estudio, somos una familia',
-  aboutImage: { src: imgBallet, alt: 'Pastel de Degas: bailarinas en escena en la Ópera de París' },
+  aboutImage: { src: photoEspejo, alt: 'Espejo de Nara Studio con las frases “Abraza lo que ves” y “Ama lo que eres”, entre plantas' },
   motto: ['Habita tu cuerpo.', 'Honra tu proceso.', 'Crece a tu manera.'],
   classesLead: 'Clases de 60 minutos, de lunes a viernes. Elige el plan que va con tu ritmo.',
   comboLead: 'Las dos disciplinas, todas las clases que quieras.',
