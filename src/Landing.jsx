@@ -809,12 +809,15 @@ function Location() {
 }
 
 const YEAR = new Date().getFullYear()
+// Quién desarrolló la app (aparece bajo el logo del pie de página)
+const DEVELOPER = 'AML Solutions'
 
 function Footer() {
   return (
     <footer className="footer">
       <div className="wrap">
         <img className="mark" src={studio.logo.light} alt={studio.logo.alt} loading="lazy" />
+        <p className="footer-dev">Desarrollado por <b>{DEVELOPER}</b></p>
         <div className="footer-cols">
           <nav aria-label="Secciones">
             <a href="#clases">Clases y planes</a>

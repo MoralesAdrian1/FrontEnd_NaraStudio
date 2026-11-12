@@ -391,6 +391,8 @@ main { overflow-x: clip; }
   padding-block: 64px 32px; border-radius: clamp(32px, 5vw, 64px) clamp(32px, 5vw, 64px) 0 0;
 }
 .mark { width: min(100%, 520px); height: auto; }
+.footer-dev { margin-top: 14px; font-size: var(--step-small); letter-spacing: 0.04em; color: var(--field-ink); opacity: 0.85; }
+.footer-dev b { font-weight: 600; }
 .footer-cols { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 40px; margin-top: 56px; font-size: var(--step-small); }
 .footer-cols nav { display: grid; gap: 8px; }
 .footer-cols a { text-decoration: none; }
