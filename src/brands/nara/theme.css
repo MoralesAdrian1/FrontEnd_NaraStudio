@@ -1,4 +1,5 @@
 /* Colores y letras de Nara Studio. Otro estudio: cambia estos valores (mismos nombres). */
+@import './fonts.css';
 :root {
   /* Hueso, tierra y rosa bajito, con un terracota para dar energía */
   --bg: #f3efec;
@@ -28,7 +29,7 @@
   --deep-rgb: 30 20 16;
   --paper-rgb: 255 251 248;
 
-  /* Letras: se cargan en meta.js (fonts) */
+  /* Letras: archivos en ./fonts, declarados en fonts.css */
   --display: 'Clash Display', 'General Sans', system-ui, sans-serif;
   --font: 'General Sans', system-ui, sans-serif;
 }

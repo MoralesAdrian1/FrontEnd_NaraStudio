@@ -1,11 +1,20 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { studentPhotoUrl } from '../lib/storage.js'
 
-/** Foto de la alumna, o su inicial si no tiene. */
-export function StudentPhoto({ name, path, small = false }) {
+/** Foto de la alumna (enlace firmado que manda el servidor), o su inicial si no tiene. */
+export function StudentPhoto({ name, url, small = false }) {
   const cls = `p-photo ${small ? 'is-small' : ''}`
-  if (path) return <img className={cls} src={studentPhotoUrl(path)} alt="" loading="lazy" width="96" height="96" />
+  if (url) return <img className={cls} src={url} alt="" loading="lazy" width="96" height="96" />
   return <span className={cls} aria-hidden="true">{name?.[0] ?? '?'}</span>
+}
+
+/** Antes de pagar: el total, sin letras chiquitas. */
+export function PriceNote({ price }) {
+  return (
+    <p className="auth-help">
+      Total a pagar: <b>{price}</b>. Sin comisiones por tarjeta ni cobros automáticos.{' '}
+      <a href="/reembolsos" target="_blank" rel="noreferrer">Política de reembolsos</a>
+    </p>
+  )
 }
 
 export function Notice({ kind = 'error', children }) {

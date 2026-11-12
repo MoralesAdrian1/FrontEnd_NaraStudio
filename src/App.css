@@ -214,8 +214,8 @@ main { overflow-x: clip; }
 .disc { padding: 14px; display: grid; grid-template-rows: auto 1fr; transition: transform 0.4s var(--spring); }
 .disc:hover { transform: translateY(-6px) rotate(-0.4deg); }
 .disc-photo { position: relative; height: clamp(220px, 22vw, 300px); border-radius: calc(var(--radius) - 8px); overflow: hidden; }
-.disc-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease); }
-.disc:hover .disc-photo img { transform: scale(1.05); }
+.disc-photo img, .disc-photo video { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease); }
+.disc:hover .disc-photo img, .disc:hover .disc-photo video { transform: scale(1.05); }
 .disc-time { position: absolute; left: 14px; top: 14px; background: rgb(var(--paper-rgb) / 0.88); padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: var(--step-small); }
 .disc-body { padding: 24px 14px 14px; }
 .disc h3 { font-family: var(--display); font-size: clamp(2rem, 1.4rem + 2vw, 3rem); font-weight: 600; text-transform: uppercase; line-height: 1; }

@@ -5,6 +5,7 @@ export const KIND_LABEL = { monthly: 'Mensual', weekly: 'Semanal', pack: 'Paquet
 export const STATUS_LABEL = {
   active: 'Activa',
   pending_payment: 'Pendiente de pago',
+  awaiting_card: 'Pago con tarjeta en proceso',
   expired: 'Vencida',
   cancelled: 'Cancelada',
 }

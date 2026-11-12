@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { api } from '../lib/api.js'
 import { clock, money, shortDate, studioDate, whenLabel } from '../lib/time.js'
 import { longDate, planPrice } from './plan-labels.js'
-import { Dialog, Empty, Notice, Section } from './ui.jsx'
+import { Dialog, Empty, Notice, PriceNote, Section } from './ui.jsx'
 import { useAction, useLoad, useNow } from './hooks.js'
 import { confirmDialog } from '../lib/feedback.js'
+import { payPendingWithCard, payWithCard } from './pay.js'
 
 const STATUS = {
   booked: 'Reservada',
@@ -170,7 +171,7 @@ function BookDialog({ s, pending, today, onClose }) {
 
   let body
   if (isMine(s)) body = <p>Ya tienes lugar en esta clase.</p>
-  else if (pending) body = <p>Ya apartaste esta clase. Pagas <b>{planPrice({ priceCents: pending.pricePaidCents })}</b> en efectivo el día que asistas.</p>
+  else if (pending) body = <PendingClass m={pending} />
   else if (s.status !== 'scheduled' || s.spotsLeft === 0) body = <p>Esta clase ya no tiene lugares.</p>
   else if (s.coveredBy) body = <ConfirmBooking s={s} when={when} onDone={onClose} />
   else body = <PaySingleClass s={s} when={when} onDone={onClose} />
@@ -180,6 +181,26 @@ function BookDialog({ s, pending, today, onClose }) {
       <p className="p-meta">{s.discipline.name} · con {s.coach.name} · <span className="p-ok-text">{s.spotsLeft} {s.spotsLeft === 1 ? 'lugar libre' : 'lugares libres'}</span></p>
       {body}
     </Dialog>
+  )
+}
+
+/** Ya la apartó en efectivo: puede quedarse así o pagarla ahora con tarjeta. */
+function PendingClass({ m }) {
+  const stripe = useLoad('/stripe/status')
+  const action = useAction()
+  const price = planPrice({ priceCents: m.pricePaidCents })
+  return (
+    <div className="p-dialog-body">
+      <p>Ya apartaste esta clase. Pagas <b>{price}</b> en efectivo el día que asistas.</p>
+      {stripe.data?.card && (
+        <>
+          <Notice>{action.error}</Notice>
+          <button className="btn btn-ok" onClick={() => action.run(() => payPendingWithCard(m.id), false)} disabled={action.busy}>
+            {action.busy ? 'Abriendo pago…' : `Mejor pagar ${price} ahora con tarjeta`}
+          </button>
+        </>
+      )}
+    </div>
   )
 }
 
@@ -209,10 +230,14 @@ function ConfirmBooking({ s, when, onDone }) {
 function PaySingleClass({ s, when, onDone }) {
   const plans = useLoad('/plans')
   const action = useAction()
+  const stripe = useLoad('/stripe/status')
+  const cardOn = !!stripe.data?.card
+  const [method, setMethod] = useState('cash')
   const plan = plans.data?.find((p) => p.kind === 'single_class' && p.shares.some((x) => x.discipline.slug === s.discipline.slug))
 
   const pay = (e) => {
     e.preventDefault()
+    if (method === 'card') return action.run(() => payWithCard(plan.id, s.id), false)
     action.run(async () => {
       await api('/memberships/cash-request', { method: 'POST', body: { planId: plan.id, classSessionId: s.id } })
       onDone(true)
@@ -231,16 +256,21 @@ function PaySingleClass({ s, when, onDone }) {
       <fieldset className="p-pay">
         <legend>Forma de pago</legend>
         <label className="auth-check">
-          <input type="radio" name="pay" defaultChecked />
+          <input type="radio" name="pay" checked={method === 'cash'} onChange={() => setMethod('cash')} />
           <span>Efectivo el día que asistas · tu lugar queda apartado y pagas al llegar a la clase</span>
         </label>
-        <label className="auth-check is-disabled">
-          <input type="radio" name="pay" disabled />
-          <span>Tarjeta · muy pronto</span>
+        <label className={`auth-check ${cardOn ? '' : 'is-disabled'}`}>
+          <input type="radio" name="pay" disabled={!cardOn} checked={method === 'card'} onChange={() => setMethod('card')} />
+          <span>{cardOn ? 'Tarjeta de crédito o débito · pagas ahora y tu lugar queda confirmado' : 'Tarjeta · muy pronto'}</span>
         </label>
       </fieldset>
+      <PriceNote price={planPrice(plan)} />
       <Notice>{action.error}</Notice>
-      <button className="btn btn-ok" disabled={action.busy}>{action.busy ? 'Apartando…' : 'Apartar y pagar al llegar'}</button>
+      <button className="btn btn-ok" disabled={action.busy}>
+        {method === 'card'
+          ? (action.busy ? 'Abriendo pago…' : `Pagar ${planPrice(plan)} con tarjeta`)
+          : (action.busy ? 'Apartando…' : 'Apartar y pagar al llegar')}
+      </button>
       <a className="auth-link" href="#membresias" onClick={() => onDone()}>O compra un plan con más clases</a>
     </form>
   )

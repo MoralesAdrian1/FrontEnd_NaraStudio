@@ -1,14 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { classKinds, combo, copy, credits, demos, disciplines, gallery, instructors, mission, philosophy, schedule, studio, vision } from '@brand/studio.js'
 import InstructorDialog from './components/InstructorDialog.jsx'
-import StudioMap from './components/StudioMap.jsx'
-import { supabase } from './lib/supabase.js'
 import { api } from './lib/api.js'
-import { publicUrl } from './lib/storage.js'
+import { publicUrl } from './lib/public-url.js'
+import { hasStoredSession } from './lib/session.js'
+
+// El mapa (Leaflet) es pesado: se descarga solo cuando la visitante llega a la ubicación
+const StudioMap = lazy(() => import('./components/StudioMap.jsx'))
 import { addDays, clock, DAYS, studioDate, studioDateTime, weekdayOf, whenLabel } from './lib/time.js'
 import Avatar from './components/Avatar.jsx'
-import { LegalLinks } from './legal/Legal.jsx'
+import { LegalLinks } from './legal/Consent.jsx'
 
 const byId = (list) => Object.fromEntries(list.map((x) => [x.id, x]))
 const INSTRUCTOR = byId(instructors)
@@ -206,11 +208,12 @@ const SOCIAL = [['Instagram', studio.instagram], ['TikTok', studio.tiktok], ['Fa
 const money = (n) => `$${n.toLocaleString('es-MX')}`
 
 function Header() {
-  const [signedIn, setSignedIn] = useState(false)
+  // Basta con ver si hay sesión guardada; si entra o sale en otra pestaña, se actualiza
+  const [signedIn, setSignedIn] = useState(hasStoredSession)
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session))
-    const { data } = supabase.auth.onAuthStateChange((_, session) => setSignedIn(!!session))
-    return () => data.subscription.unsubscribe()
+    const onStorage = () => setSignedIn(hasStoredSession())
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
   return (
     <header className="bar">
@@ -355,7 +358,11 @@ function Classes() {
         {disciplines.map((d, i) => (
           <article className={`disc clay-card ${i ? 'rose' : ''}`} key={d.id} data-reveal>
             <div className="disc-photo">
-              <img src={d.image} alt={d.imageAlt} loading="lazy" />
+              {d.video ? (
+                <AutoVideo src={d.video} poster={d.image} label={`Video de una clase de ${d.name}`} />
+              ) : (
+                <img src={d.image} alt={d.imageAlt} loading="lazy" />
+              )}
               <span className="disc-time glass">{d.details[0]}</span>
             </div>
             <div className="disc-body">
@@ -701,7 +708,7 @@ function Demos() {
           {demos.map((d) => (
             <figure className="demo" key={d.id} data-reveal>
               {d.src ? (
-                <video controls preload="none" poster={d.poster} playsInline>
+                <video controls preload="metadata" poster={d.poster ?? undefined} playsInline>
                   <source src={d.src} />
                 </video>
               ) : (
@@ -720,6 +727,50 @@ function Demos() {
   )
 }
 
+/**
+ * Video decorativo en silencio y en bucle. No se descarga hasta que está cerca de verse, se pausa
+ * fuera de pantalla y, si la persona pidió menos movimiento, se queda en la imagen.
+ */
+function AutoVideo({ src, poster, label }) {
+  const ref = useRef(null)
+  const [near, setNear] = useState(false)
+  useEffect(() => {
+    const v = ref.current
+    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        setNear(true)
+        v.play().catch(() => undefined)
+      } else v.pause()
+    }, { rootMargin: '300px' })
+    io.observe(v)
+    return () => io.disconnect()
+  }, [])
+  return <video ref={ref} src={near ? src : undefined} poster={poster} muted loop playsInline preload="none" aria-label={label} />
+}
+
+/** El mapa se monta cuando su lugar está por aparecer en pantalla. */
+function LazyMap() {
+  const ref = useRef(null)
+  const [show, setShow] = useState(() => !('IntersectionObserver' in window))
+  useEffect(() => {
+    if (show) return undefined
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && setShow(true), { rootMargin: '600px' })
+    io.observe(ref.current)
+    return () => io.disconnect()
+  }, [show])
+  return (
+    <div ref={ref} className="map-slot">
+      {show && (
+        <Suspense fallback={<div className="map" aria-hidden="true" />}>
+          <StudioMap />
+        </Suspense>
+      )}
+      {!show && <div className="map" aria-hidden="true" />}
+    </div>
+  )
+}
+
 function Location() {
   return (
     <section className="location wrap" id="ubicacion" aria-labelledby="ubicacion-title">
@@ -729,7 +780,7 @@ function Location() {
       </div>
       <div className="location-grid" data-reveal>
         <div className="map-shell">
-          <StudioMap />
+          <LazyMap />
         </div>
         <div className="location-card glass">
           <p className="address">

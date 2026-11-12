@@ -1,5 +1,5 @@
 import { forget, peek, remember } from './cache.js'
-import { supabase } from './supabase.js'
+import { hasStoredSession } from './session.js'
 
 // En desarrollo Vite redirige /api al backend; en producción se define VITE_API_URL
 const BASE = import.meta.env.VITE_API_URL ?? ''
@@ -30,8 +30,12 @@ export async function api(path, { method = 'GET', body, force = false } = {}) {
   const kind = method === 'GET' ? 'reads' : 'writes'
   changed(kind, 1)
   try {
-    const { data } = await supabase.auth.getSession()
-    const token = data.session?.access_token
+    // Sin sesión guardada (visitante de la landing) no hace falta cargar supabase-js
+    let token
+    if (hasStoredSession()) {
+      const { supabase } = await import('./supabase.js')
+      token = (await supabase.auth.getSession()).data.session?.access_token
+    }
     const res = await fetch(`${BASE}/api${path}`, {
       method,
       headers: {

@@ -1,4 +1,7 @@
 import { supabase } from './supabase.js'
+import { publicUrl } from './public-url.js'
+
+export { publicUrl }
 
 const BUCKET = 'coaches'
 const EXT = { 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
@@ -15,7 +18,6 @@ export async function uploadCoachFile(file, kind) {
   return path
 }
 
-export const publicUrl = (path, bucket = BUCKET) => (path ? supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl : null)
 
 const STUDENTS = 'students'
 const PHOTO_PX = 320
@@ -52,4 +54,3 @@ export async function uploadStudentPhoto(file, previousPath) {
   return path
 }
 
-export const studentPhotoUrl = (path) => publicUrl(path, STUDENTS)

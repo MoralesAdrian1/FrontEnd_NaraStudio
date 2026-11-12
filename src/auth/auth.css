@@ -72,6 +72,10 @@
 .auth-notice.info { background: rgb(255 255 255 / 0.7); }
 
 .auth-foot { text-align: center; margin: 0 auto; }
+
+.auth-waiting { display: grid; justify-items: center; gap: 12px; text-align: center; padding: 20px; border-radius: 20px; background: rgb(255 255 255 / 0.55); }
+.auth-waiting .pulse { margin: 8px 0 4px; }
+.auth-waiting strong { overflow-wrap: anywhere; }
 .auth-link {
   background: none; border: 0; cursor: pointer; font-weight: 600; color: var(--earth);
   text-decoration: underline; text-underline-offset: 3px;

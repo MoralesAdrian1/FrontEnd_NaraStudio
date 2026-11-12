@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api.js'
 import { clock, shortDate } from '../lib/time.js'
 import { creditsLabel, dateTime, KIND_LABEL, longDate, planDisciplines, planPrice, planSummary, STATUS_LABEL } from './plan-labels.js'
-import { Empty, Notice, Section } from './ui.jsx'
+import { Empty, Notice, PriceNote, Section } from './ui.jsx'
 import { useAction, useLoad, useNow } from './hooks.js'
-import { confirmDialog } from '../lib/feedback.js'
+import { confirmDialog, notify } from '../lib/feedback.js'
+import { payPendingWithCard, payWithCard } from './pay.js'
+import PaymentWelcome from './PaymentWelcome.jsx'
 
 /** La alumna: sus membresías y la compra de un plan. */
 export default function Memberships() {
@@ -12,17 +14,30 @@ export default function Memberships() {
   const plans = useLoad('/plans')
   const preselected = Number(new URLSearchParams(window.location.search).get('plan')) || null
   const [chosen, setChosen] = useState(preselected)
+  // Regreso de la página de pago de Stripe con el pago hecho: animación de bienvenida
+  const [welcome, setWelcome] = useState(() => new URLSearchParams(window.location.search).get('pago') === 'ok')
 
   // La tarjeta elegida se abre en su lugar; se lleva a la vista (también al llegar desde la landing)
   useEffect(() => {
     if (chosen && plans.data) document.querySelector('.p-plan.is-chosen')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   }, [chosen, plans.data])
 
-  const current = (mine.data ?? []).filter((m) => m.status === 'active' || m.status === 'pending_payment')
+  // Regreso de la página de pago de Stripe: el aviso del pago puede tardar unos segundos
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get('pago')
+    if (!result) return
+    window.history.replaceState(null, '', window.location.pathname + window.location.hash)
+    if (result !== 'ok') return notify('info', 'No se hizo ningún cargo. Puedes intentar de nuevo o pagar en efectivo.')
+    const timers = [3000, 8000, 15000].map((ms) => setTimeout(mine.reload, ms))
+    return () => timers.forEach(clearTimeout)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const current = (mine.data ?? []).filter((m) => ['active', 'pending_payment', 'awaiting_card'].includes(m.status))
   const past = (mine.data ?? []).filter((m) => m.status === 'expired' || m.status === 'cancelled')
 
   return (
     <div className="p-stack">
+      {welcome && <PaymentWelcome onClose={() => { setWelcome(false); mine.reload() }} />}
       <Section title="Mis membresías">
         <Notice>{mine.error}</Notice>
         {mine.data && current.length === 0 && <Empty>Aún no tienes una membresía activa. Elige un plan abajo.</Empty>}
@@ -75,9 +90,11 @@ export default function Memberships() {
 
 function MembershipCard({ m, onChange }) {
   const action = useAction()
+  const stripe = useLoad('/stripe/status')
   const pending = m.status === 'pending_payment'
+  const card = m.status === 'awaiting_card'
   const withdraw = async () => {
-    if (!await confirmDialog('¿Retirar esta solicitud?')) return
+    if (!await confirmDialog(card ? '¿Cancelar este pago con tarjeta?' : '¿Retirar esta solicitud?')) return
     action.run(async () => {
       await api(`/memberships/${m.id}/cancel`, { method: 'POST' })
       onChange()
@@ -87,9 +104,19 @@ function MembershipCard({ m, onChange }) {
     <article className={`p-membership ${pending ? 'is-pending' : ''}`}>
       <span className="chip-clay">{STATUS_LABEL[m.status]}</span>
       <h3>{m.plan.name}</h3>
-      {pending ? (
+      {card ? (
+        <>
+          <p>Estás pagando con tarjeta. Si no terminaste el pago, se cancela solo en unos minutos{m.classSession ? ' y se libera tu lugar' : ''}.</p>
+          <button className="btn btn-glass btn-small" onClick={withdraw} disabled={action.busy}>Cancelar pago</button>
+        </>
+      ) : pending ? (
         <>
           <PendingHowTo m={m} />
+          {stripe.data?.card && (
+            <button className="btn btn-clay btn-small" onClick={() => action.run(() => payPendingWithCard(m.id), false)} disabled={action.busy}>
+              {action.busy ? 'Abriendo pago…' : 'Pagar ahora con tarjeta'}
+            </button>
+          )}
           <button className="btn btn-glass btn-small" onClick={withdraw} disabled={action.busy}>Retirar solicitud</button>
         </>
       ) : (
@@ -134,6 +161,8 @@ function Checkout({ plan, onDone }) {
   const sessions = useLoad(single ? '/sessions' : null)
   const [sessionId, setSessionId] = useState('')
   const [method, setMethod] = useState('cash')
+  const stripe = useLoad('/stripe/status')
+  const cardOn = !!stripe.data?.card
   const action = useAction()
   const now = useNow()
   const slugs = plan.shares.map((s) => s.discipline.slug)
@@ -143,6 +172,7 @@ function Checkout({ plan, onDone }) {
 
   const submit = (e) => {
     e.preventDefault()
+    if (method === 'card') return action.run(() => payWithCard(plan.id, single ? Number(sessionId) : undefined), false)
     action.run(async () => {
       await api('/memberships/cash-request', {
         method: 'POST',
@@ -176,13 +206,18 @@ function Checkout({ plan, onDone }) {
           <input type="radio" name="pay" checked={method === 'cash'} onChange={() => setMethod('cash')} />
           <span>{single ? 'Efectivo el día que asistas · tu lugar queda apartado' : 'Efectivo el día que asistas · reservas tu primera clase y pagas al llegar'}</span>
         </label>
-        <label className="auth-check is-disabled">
-          <input type="radio" name="pay" disabled />
-          <span>Tarjeta · muy pronto</span>
+        <label className={`auth-check ${cardOn ? '' : 'is-disabled'}`}>
+          <input type="radio" name="pay" disabled={!cardOn} checked={method === 'card'} onChange={() => setMethod('card')} />
+          <span>{cardOn ? `Tarjeta de crédito o débito · pagas ahora y ${single ? 'tu lugar queda confirmado' : 'tu plan se activa al momento'}` : 'Tarjeta · muy pronto'}</span>
         </label>
       </fieldset>
+      <PriceNote price={planPrice(plan)} />
       <Notice>{action.error}</Notice>
-      <button className="btn btn-clay" disabled={action.busy}>{action.busy ? 'Enviando…' : 'Pagar en efectivo el día de mi clase'}</button>
+      <button className="btn btn-clay" disabled={action.busy}>
+        {method === 'card'
+          ? (action.busy ? 'Abriendo pago…' : `Pagar ${planPrice(plan)} con tarjeta`)
+          : (action.busy ? 'Enviando…' : 'Pagar en efectivo el día de mi clase')}
+      </button>
     </form>
   )
 }

@@ -5,9 +5,10 @@ import { creditsLabel, KIND_LABEL, longDate, planPrice, STATUS_LABEL } from './p
 import { Empty, Notice, Section, StudentPhoto, Toggle } from './ui.jsx'
 import { useAction, useLoad, useNow } from './hooks.js'
 import { confirmDialog } from '../lib/feedback.js'
+import { isMinorDate } from '../lib/age.js'
 
 /** Alumnas de la coach: buscar, registrar (con invitación a la app) y vender un plan en efectivo. */
-export default function Students() {
+export default function Students({ me }) {
   const [q, setQ] = useState('')
   const [search, setSearch] = useState('')
   const list = useLoad(`/students${search ? `?q=${encodeURIComponent(search)}` : ''}`)
@@ -36,7 +37,14 @@ export default function Students() {
                 <b>{s.fullName}</b>
                 <small>{s.activePlans.length ? s.activePlans.join(' · ') : 'Sin plan activo'}{!s.usesApp && ' · sin app'}</small>
               </button>
-              {openId === s.id && <StudentDetail id={s.id} onChange={list.reload} />}
+              {openId === s.id && (
+                <StudentDetail
+                  id={s.id}
+                  canDelete={me?.role === 'admin'}
+                  onChange={list.reload}
+                  onDeleted={() => { setOpenId(null); list.reload() }}
+                />
+              )}
             </li>
           ))}
         </ul>
@@ -47,15 +55,27 @@ export default function Students() {
 
 /** Registro de alumna: se crea su cuenta y le llega la invitación. También se usa al pasar lista. */
 export function NewStudent({ onDone, onCancel }) {
-  const [form, setForm] = useState({ fullName: '', phone: '', email: '', birthDate: '' })
+  const [form, setForm] = useState({ fullName: '', phone: '', email: '', birthDate: '', guardianName: '', guardianPhone: '', guardianEmail: '', guardianConsent: false })
   const action = useAction()
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })
+  const minor = isMinorDate(form.birthDate)
   const submit = (e) => {
     e.preventDefault()
     action.run(async () => {
       const s = await api('/students', {
         method: 'POST',
-        body: { fullName: form.fullName, phone: form.phone, email: form.email.trim(), birthDate: form.birthDate || undefined },
+        body: {
+          fullName: form.fullName,
+          phone: form.phone,
+          email: form.email.trim(),
+          birthDate: form.birthDate || undefined,
+          ...(minor && {
+            guardianName: form.guardianName,
+            guardianPhone: form.guardianPhone,
+            guardianEmail: form.guardianEmail.trim() || undefined,
+            guardianConsent: form.guardianConsent,
+          }),
+        },
       })
       onDone(s)
       return s
@@ -90,6 +110,29 @@ export function NewStudent({ onDone, onCancel }) {
           <input type="date" value={form.birthDate} onChange={set('birthDate')} />
         </label>
       </div>
+      {minor && (
+        <fieldset>
+          <legend>Es menor de edad: su madre, padre o tutor</legend>
+          <div className="auth-row">
+            <label>
+              Nombre
+              <input required minLength={2} value={form.guardianName} onChange={set('guardianName')} />
+            </label>
+            <label>
+              Celular
+              <input type="tel" required minLength={10} value={form.guardianPhone} onChange={set('guardianPhone')} />
+            </label>
+          </div>
+          <label>
+            Correo (opcional)
+            <input type="email" value={form.guardianEmail} onChange={set('guardianEmail')} />
+          </label>
+          <label className="auth-check">
+            <input type="checkbox" required checked={form.guardianConsent} onChange={set('guardianConsent')} />
+            <span>Su madre, padre o tutor autorizó en persona que entrene en el estudio y que guardemos sus datos.</span>
+          </label>
+        </fieldset>
+      )}
       <Notice>{action.error}</Notice>
       <div className="p-actions">
         <button className="btn btn-clay btn-small" disabled={action.busy}>Registrar</button>
@@ -99,10 +142,11 @@ export function NewStudent({ onDone, onCancel }) {
   )
 }
 
-function StudentDetail({ id, onChange }) {
+function StudentDetail({ id, canDelete, onChange, onDeleted }) {
   const student = useLoad(`/students/${id}`)
   const memberships = useLoad(`/students/${id}/memberships`)
   const invite = useAction()
+  const removal = useAction()
   const s = student.data
   const h = s?.health
 
@@ -114,12 +158,21 @@ function StudentDetail({ id, onChange }) {
       if (!r.invitationSent) throw new Error('La cuenta existe, pero no se pudo mandar el correo. Intenta de nuevo en un rato.')
     }, `Invitación enviada a ${s?.email}.`)
 
+  const remove = async () => {
+    if (!await confirmDialog(`¿Borrar la cuenta de ${s.fullName} y sus datos personales? Sus pagos se conservan sin su nombre. No se puede deshacer.`, { danger: true, confirmLabel: 'Sí, borrar' })) return
+    const done = await removal.run(async () => {
+      await api(`/students/${id}`, { method: 'DELETE' })
+      return true
+    }, 'Cuenta y datos borrados.')
+    if (done) onDeleted()
+  }
+
   return (
     <div className="p-detail">
       <Notice>{student.error}</Notice>
       {s && (
         <div className="p-account">
-          <StudentPhoto name={s.fullName} path={s.photoPath} small />
+          <StudentPhoto name={s.fullName} url={s.photoUrl} small />
           <span>
             {!s.usesApp ? 'Sin cuenta en la app' : s.hasSignedIn ? 'Ya entra a la app' : s.hasSignedIn === false ? 'Invitación enviada: todavía no entra' : 'Tiene cuenta en la app'}
           </span>
@@ -138,6 +191,12 @@ function StudentDetail({ id, onChange }) {
           <div><dt>Nacimiento</dt><dd>{s.birthDate ? longDate(s.birthDate) : '—'}</dd></div>
           <div><dt>Peso / estatura</dt><dd>{h ? `${h.weightKg ?? '—'} kg · ${h.heightCm ?? '—'} cm` : '—'}</dd></div>
           <div className="wide"><dt>Condiciones especiales</dt><dd>{h?.specialConditions || '—'}</dd></div>
+          {s.isMinor && (
+            <div className="wide">
+              <dt>Menor de edad · tutor</dt>
+              <dd>{s.guardian ? <>{s.guardian.name} · <a href={`tel:${s.guardian.phone}`}>{s.guardian.phone}</a>{s.guardian.email && ` · ${s.guardian.email}`}</> : 'Falta la autorización de su tutor'}</dd>
+            </div>
+          )}
         </dl>
       )}
       <h3 className="p-sub">Membresías</h3>
@@ -157,6 +216,14 @@ function StudentDetail({ id, onChange }) {
       <Toggle label="Vender plan en efectivo" className="btn btn-clay btn-small">
         {(close) => <Sell studentId={id} onDone={() => { close(); memberships.reload(); onChange() }} onCancel={close} />}
       </Toggle>
+      {canDelete && s && (
+        <p className="p-meta">
+          <button className="auth-link" onClick={remove} disabled={removal.busy}>
+            {removal.busy ? 'Borrando…' : 'Borrar cuenta y datos (a petición de la alumna)'}
+          </button>
+        </p>
+      )}
+      <Notice>{removal.error}</Notice>
     </div>
   )
 }

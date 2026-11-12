@@ -69,7 +69,7 @@ export default function Roster({ sessionId, onChange, addInDialog = false }) {
           <ul className="p-roster-list">
             {active.map((b) => (
               <li key={b.id} className={`is-${b.status}`}>
-                <StudentPhoto name={b.student.fullName} path={b.student.photoPath} small />
+                <StudentPhoto name={b.student.fullName} url={b.student.photoUrl} small />
                 <span className="p-roster-name">
                   <b>{b.student.fullName}</b>
                   <small>
@@ -175,7 +175,7 @@ function AddStudents({ sessionId, spotsLeft, salePlans, onDone, bare = false }) 
           <ul className="p-candidates">
             {shown.map((s) => (
               <li key={s.id}>
-                <StudentPhoto name={s.fullName} path={s.photoPath} small />
+                <StudentPhoto name={s.fullName} url={s.photoUrl} small />
                 <span className="p-roster-name">
                   <b>{s.fullName}</b>
                   <small>{s.planName}{!s.usesApp && ' · sin app'}</small>
@@ -237,7 +237,7 @@ function WithoutPlan({ sessionId, plans, onDone }) {
           <ul className="p-candidates">
             {(found.data ?? []).slice(0, 8).map((s) => (
               <li key={s.id}>
-                <StudentPhoto name={s.fullName} path={s.photoPath} small />
+                <StudentPhoto name={s.fullName} url={s.photoUrl} small />
                 <span className="p-roster-name">
                   <b>{s.fullName}</b>
                   <small>{s.activePlans.length ? s.activePlans.join(', ') : 'Sin plan activo'}{!s.usesApp && ' · sin app'}</small>

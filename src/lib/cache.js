@@ -5,7 +5,7 @@
  * almacenamiento de rendimiento (consent.js); si lo rechaza, se borra lo guardado.
  */
 import { getConsent, onConsent } from './consent.js'
-import { SESSION_KEY } from './supabase.js'
+import { storedSession } from './session.js'
 
 const PREFIX = 'nara:v1:'
 const MIN = 60_000
@@ -31,11 +31,7 @@ const ALSO_CLEARS = { me: ['coaches'], disciplines: ['plans', 'coaches', 'classe
 
 /** La cuenta con sesión, leída sin esperar a Supabase: cada cuenta tiene su propia caché. */
 function userId() {
-  try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY) ?? sessionStorage.getItem(SESSION_KEY))?.user?.id ?? 'anon'
-  } catch {
-    return 'anon'
-  }
+  return storedSession()?.user?.id ?? 'anon'
 }
 
 const keyOf = (path) => `${PREFIX}${userId()}:${path}`

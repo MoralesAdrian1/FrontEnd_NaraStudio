@@ -1,27 +1,31 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import '../App.css'
 import '../auth/auth.css'
 import './panel.css'
 import { studio } from '@brand/studio.js'
 import { signOutAndLeave } from '../lib/supabase.js'
-import { Closures, Disciplines } from './Admin.jsx'
-import Book from './Book.jsx'
-import Classes from './Classes.jsx'
-import CoachProfile from './CoachProfile.jsx'
-import Coaches from './Coaches.jsx'
-import Community from './Community.jsx'
-import ImportStudents from './ImportStudents.jsx'
-import Memberships from './Memberships.jsx'
-import NextClass from './NextClass.jsx'
-import Plans from './Plans.jsx'
-import Progress, { StreakBadge } from './Progress.jsx'
+import { StreakBadge } from './Progress.jsx'
 import { useLoad } from './hooks.js'
 import { Feedback } from './feedback.jsx'
-import Profile from './Profile.jsx'
-import Requests from './Requests.jsx'
-import Settlement from './Settlement.jsx'
-import Sessions from './Sessions.jsx'
-import Students from './Students.jsx'
+
+// Cada sección se descarga al abrirla (la carga masiva trae el lector de Excel, por ejemplo)
+const Closures = lazy(() => import('./Admin.jsx').then((m) => ({ default: m.Closures })))
+const Disciplines = lazy(() => import('./Admin.jsx').then((m) => ({ default: m.Disciplines })))
+const Book = lazy(() => import('./Book.jsx'))
+const Classes = lazy(() => import('./Classes.jsx'))
+const CoachProfile = lazy(() => import('./CoachProfile.jsx'))
+const Coaches = lazy(() => import('./Coaches.jsx'))
+const Community = lazy(() => import('./Community.jsx'))
+const ImportStudents = lazy(() => import('./ImportStudents.jsx'))
+const Memberships = lazy(() => import('./Memberships.jsx'))
+const NextClass = lazy(() => import('./NextClass.jsx'))
+const Plans = lazy(() => import('./Plans.jsx'))
+const Progress = lazy(() => import('./Progress.jsx'))
+const Profile = lazy(() => import('./Profile.jsx'))
+const Requests = lazy(() => import('./Requests.jsx'))
+const Settlement = lazy(() => import('./Settlement.jsx'))
+const Sessions = lazy(() => import('./Sessions.jsx'))
+const Students = lazy(() => import('./Students.jsx'))
 
 const STREAK_EVERY_MS = 60_000
 
@@ -174,7 +178,9 @@ export default function Panel({ me, onMe }) {
 
       <main className="panel-main">
         <h1 className="sr-only">{title}</h1>
-        <Current me={me} onMe={onMe} />
+        <Suspense fallback={<p className="p-meta" aria-busy="true">Cargando…</p>}>
+          <Current me={me} onMe={onMe} />
+        </Suspense>
       </main>
 
       {/* Avisos de éxito o error, confirmaciones y carga */}

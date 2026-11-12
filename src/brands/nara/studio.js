@@ -1,12 +1,16 @@
 // Marca de Nara Studio: datos, textos de la landing, logos e imágenes.
 // Para otro estudio: copia esta carpeta (src/brands/<id>) y cambia lo de aquí,
 // theme.css (colores y letras) y meta.js (título, descripción y favicon).
-import logoDark from './img/nara-logo-dark.png'
-import logoLight from './img/nara-logo-light.png'
-import imgBarre from './img/dancers-practicing-at-the-barre.jpg'
-import imgBallet from './img/ballet-at-the-paris-opera.jpg'
-import imgAcrobats from './img/acrobats-at-the-cirque-fernando-francisca-and.jpg'
-import imgCity from './img/azoteas-de-dolores-hidalgo-gto.jpg'
+import logoDark from './img/nara-logo-dark.webp'
+import logoLight from './img/nara-logo-light.webp'
+import imgBarre from './img/dancers-practicing-at-the-barre.webp'
+import imgBallet from './img/ballet-at-the-paris-opera.webp'
+import imgAcrobats from './img/acrobats-at-the-cirque-fernando-francisca-and.webp'
+import imgCity from './img/azoteas-de-dolores-hidalgo-gto.webp'
+
+// Foto y video reales del estudio (en /public)
+const photoNadia = '/fotos/Nadia1.webp'
+const videoBarre = '/Videos/clase%20de%20barre.mp4'
 
 export const studio = {
   name: 'Nara Studio',
@@ -47,6 +51,8 @@ export const disciplines = [
     profile: 'nadia',
     image: imgBarre,
     imageAlt: 'Pintura de Degas: dos bailarinas estiran la pierna sobre la barra de ensayo',
+    // Si hay video, se reproduce en silencio en lugar de la imagen (la imagen queda de portada)
+    video: videoBarre,
     classes: 'Barre & Sculpt · Barre Restore',
     details: ['60 minutos', 'Todos los niveles', 'Calcetas antiderrapantes'],
     styles: [
@@ -193,7 +199,7 @@ export const gallery = [
 
 // Videos demo. Pon el archivo en /public/video y escribe la ruta en `src`.
 export const demos = [
-  { id: 'barre', title: 'Así se siente una clase de barre', src: null, poster: imgBarre },
+  { id: 'barre', title: 'Así se siente una clase de barre', src: videoBarre, poster: null },
   { id: 'trampolin', title: 'Así se siente una clase de trampolín', src: null, poster: imgAcrobats },
 ]
 
@@ -218,7 +224,7 @@ export const copy = {
   heroTitle: 'Habita tu cuerpo',
   heroLead:
     'Un espacio de movimiento, bienestar y conexión personal en Dolores Hidalgo, para que cada mujer fortalezca su cuerpo y disfrute su proceso.',
-  heroImage: { src: imgBarre, alt: 'Pintura de Degas: dos bailarinas estiran la pierna sobre la barra de ensayo' },
+  heroImage: { src: photoNadia, alt: 'Nadia en la sala de Nara Studio, apoyada en la barra con la pierna extendida y una mancuerna en la mano' },
   heroChips: ['Barre · 60 min', 'Trampolín · 60 min'],
   marquee: ['Barre', 'Sculpt', 'Jump', 'Habita tu cuerpo', 'Fortalece tu esencia', 'Honra tu proceso', 'Crece a tu manera'],
   aboutTitle: 'Más que un estudio, somos una familia',

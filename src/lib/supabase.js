@@ -1,8 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-
-// Claves de Supabase en el navegador: "sb-<ref>-auth-token" (la sesión) y sus variantes
-const AUTH_PREFIX = `sb-${new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0]}-`
-export const SESSION_KEY = `${AUTH_PREFIX}auth-token`
+import { AUTH_PREFIX } from './session.js'
 const REMEMBER_KEY = 'nara:remember'
 
 const safe = (fn, fallback = null) => {
@@ -67,10 +64,15 @@ const MESSAGES = {
   'Password should be at least 6 characters.': 'La contraseña debe tener al menos 6 caracteres.',
   'New password should be different from the old password.': 'La contraseña nueva debe ser distinta a la anterior.',
   'Email link is invalid or has expired': 'El enlace venció o ya se usó. Pide uno nuevo.',
+  'captcha protection: request disallowed (captcha verification process failed)': 'No pudimos verificar que no eres un robot. Intenta de nuevo.',
+  'Email rate limit exceeded': 'Se mandaron muchos correos seguidos. Espera unos minutos e intenta de nuevo.',
+  'Request rate limit reached': 'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
 }
 
 export function authMessage(error) {
   const message = error?.message
+  if (/captcha/i.test(message ?? '')) return MESSAGES['captcha protection: request disallowed (captcha verification process failed)']
+  if (/rate limit/i.test(message ?? '')) return MESSAGES['Request rate limit reached']
   if (message?.startsWith('Password should')) return 'La contraseña es muy débil: usa al menos 8 caracteres con mayúscula, minúscula, número y un carácter especial.'
   return MESSAGES[message] ?? message ?? 'Algo salió mal. Intenta de nuevo.'
 }
