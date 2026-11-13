@@ -706,7 +706,7 @@ function Demos() {
         </div>
         <div className="demo-grid">
           {demos.map((d) => (
-            <figure className="demo" key={d.id} data-reveal>
+            <figure className={`demo${d.vertical ? ' demo-vertical' : ''}`} key={d.id} data-reveal>
               {d.src ? (
                 <video controls preload="metadata" poster={d.poster ?? undefined} playsInline>
                   <source src={d.src} />
@@ -837,7 +837,7 @@ function Footer() {
               {SOCIAL.map(([name, href]) => <a key={name} href={href} target="_blank" rel="noreferrer">{name}</a>)}
             </p>
           </div>
-          <p className="credits">Imágenes: {credits.join(' · ')}.</p>
+          <p className="credits">Créditos: {credits.join(' · ')}.</p>
         </div>
         <div className="footer-last">
           <p>© {YEAR} {studio.name}</p>

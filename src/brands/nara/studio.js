@@ -3,7 +3,6 @@
 // theme.css (colores y letras) y meta.js (título, descripción y favicon).
 import logoDark from './img/nara-logo-dark.webp'
 import logoLight from './img/nara-logo-light.webp'
-import imgAcrobats from './img/acrobats-at-the-cirque-fernando-francisca-and.webp'
 
 // Fotos y video reales del estudio (en /public; originales sin comprimir en ../fotos-originales)
 const photoNadia = '/fotos/Nadia1.webp'
@@ -12,7 +11,13 @@ const photoSala = '/fotos/sala-espejos.webp'
 const photoBarra = '/fotos/barra.webp'
 const photoPesas = '/fotos/pesas.webp'
 const photoEspejo = '/fotos/espejo.webp'
+const photoClaseBarre = '/fotos/clase-barre.webp'
+const photoSalaBarras = '/fotos/sala-barras.webp'
+const photoTapetesEspejos = '/fotos/tapetes-espejos.webp'
+const photoTapetesPelotas = '/fotos/tapetes-pelotas.webp'
 const videoBarre = '/Videos/clase%20de%20barre.mp4'
+const videoTrampolin = '/Videos/trampolin-clase.mp4'
+const posterTrampolin = '/fotos/trampolin-poster.webp'
 
 export const studio = {
   name: 'Nara Studio',
@@ -80,8 +85,9 @@ export const disciplines = [
     name: 'Trampolín',
     tone: '#d8c3ae',
     profile: 'juana',
-    image: imgAcrobats,
-    imageAlt: 'Pintura de Renoir: dos jóvenes acróbatas en la pista del circo',
+    image: posterTrampolin,
+    imageAlt: 'Alumnas saltando en sus trampolines durante una clase en Nara Studio',
+    video: videoTrampolin,
     classes: 'Jump',
     details: ['60 minutos', 'Todos los niveles', 'Tenis limpios'],
     styles: [
@@ -195,18 +201,20 @@ export const vision =
 export const gallery = [
   { src: photoEntrada, alt: 'Letrero dorado de Nara Studio sobre el ventanal; detrás, la sala con su barra y espejos', caption: 'Bienvenida a tu espacio.' },
   { src: photoEspejo, alt: 'Espejo de Nara Studio con las frases “Abraza lo que ves” y “Ama lo que eres”, entre plantas', caption: 'Abraza lo que ves, ama lo que eres.' },
-  { src: photoBarra, alt: 'Barra de ballet con mancuernas de 8 libras', caption: 'Todo listo para tu clase.' },
+  { src: photoTapetesPelotas, alt: 'Tapetes con pelotas rosas y ligas junto a la barra de pared', caption: 'Todo listo para tu clase.' },
   { src: photoPesas, alt: 'Tapetes doblados y mancuernas de 5 y 8 libras en el estante', caption: 'Material para cada nivel.' },
+  { src: photoSalaBarras, alt: 'La sala de Nara Studio con tapetes, pelotas y barras frente a los espejos', caption: 'Espacio para moverte.' },
+  { src: photoTapetesEspejos, alt: 'Fila de tapetes frente a la pared de espejos con el letrero de Nara', caption: 'Tu lugar frente al espejo.' },
+  { src: photoClaseBarre, alt: 'Alumnas en clase de barre frente a los espejos, con la pierna en relevé y los brazos arriba', caption: 'Así se vive una clase de barre.' },
 ]
 
-// Videos demo. Pon el archivo en /public/video y escribe la ruta en `src`.
+// Videos demo (en /public/Videos). `vertical: true` para videos grabados con el celular en vertical.
 export const demos = [
   { id: 'barre', title: 'Así se siente una clase de barre', src: videoBarre, poster: null },
-  { id: 'trampolin', title: 'Así se siente una clase de trampolín', src: null, poster: imgAcrobats },
+  { id: 'trampolin', title: 'Así se siente una clase de trampolín', src: videoTrampolin, poster: posterTrampolin, vertical: true },
 ]
 
 export const credits = [
-  '“Acrobats at the Cirque Fernando”, Pierre-Auguste Renoir, 1879, dominio público (CC0), Art Institute of Chicago',
   'Mapa © colaboradores de OpenStreetMap',
 ]
 

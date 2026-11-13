@@ -216,6 +216,8 @@ main { overflow-x: clip; }
 .disc-photo { position: relative; height: clamp(220px, 22vw, 300px); border-radius: calc(var(--radius) - 8px); overflow: hidden; }
 .disc-photo img, .disc-photo video { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease); }
 .disc:hover .disc-photo img, .disc:hover .disc-photo video { transform: scale(1.05); }
+/* El video de trampolín es vertical: se encuadra más arriba para que se vean las alumnas */
+.disc:nth-child(2) .disc-photo video { object-position: 50% 38%; }
 .disc-time { position: absolute; left: 14px; top: 14px; background: rgb(var(--paper-rgb) / 0.88); padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: var(--step-small); }
 .disc-body { padding: 24px 14px 14px; }
 .disc h3 { font-family: var(--display); font-size: clamp(2rem, 1.4rem + 2vw, 3rem); font-weight: 600; text-transform: uppercase; line-height: 1; }
@@ -315,7 +317,7 @@ main { overflow-x: clip; }
 .gallery { margin-top: var(--gap); }
 .bento {
   display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: clamp(200px, 19vw, 280px);
-  grid-template-areas: 'a a b c' 'a a d e'; gap: 16px; margin-top: 44px;
+  grid-template-areas: 'a a b c' 'a a d e' 'f g h h'; gap: 16px; margin-top: 44px;
 }
 .tile { position: relative; overflow: hidden; border-radius: var(--radius); }
 .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
@@ -328,6 +330,9 @@ main { overflow-x: clip; }
 .tile-1 { grid-area: b; }
 .tile-2 { grid-area: c; }
 .tile-3 { grid-area: d; }
+.tile-4 { grid-area: f; }
+.tile-5 { grid-area: g; }
+.tile-6 { grid-area: h; }
 .tile-facts { grid-area: e; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; }
 .tile-facts b { font-family: var(--display); font-size: clamp(4rem, 7vw, 6.5rem); font-weight: 600; line-height: 0.9; }
 .tile-facts span { font-weight: 500; line-height: 1.35; }
@@ -343,6 +348,8 @@ main { overflow-x: clip; }
 .demos .section-head p { color: var(--on-dark-muted); }
 .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 44px; }
 .demo video, .demo-soon { width: 100%; aspect-ratio: 16 / 10; background: var(--deep); object-fit: cover; border-radius: var(--radius); }
+/* Video grabado en vertical: se ve completo, con fondo oscuro a los lados */
+.demo-vertical video { object-fit: contain; }
 .demo-soon { position: relative; overflow: hidden; }
 .demo-soon img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: transform 1.2s var(--ease); }
 .demo:hover .demo-soon img { transform: scale(1.05); }
@@ -688,7 +695,7 @@ main { overflow-x: clip; }
   .slot-time { font-size: 1.125rem; white-space: nowrap; }
   .slot-who, .slot-flag, .slot .book-link { grid-column: 2; justify-self: start; }
 
-  .bento { grid-template-columns: 1fr 1fr; grid-template-areas: 'a a' 'a a' 'b c' 'd e'; grid-auto-rows: 44vw; gap: 10px; }
+  .bento { grid-template-columns: 1fr 1fr; grid-template-areas: 'a a' 'a a' 'b c' 'd e' 'f g' 'h h'; grid-auto-rows: 44vw; gap: 10px; }
   .tile figcaption { display: none; }
   .tile-0 figcaption { display: block; }
   .tile-facts { padding: 16px; }
